@@ -72,11 +72,11 @@ Next I created a blastable data base to match scaffolds from the melanic genome 
 makeblastdb -in timema_cristinae_LGs_12Jun2019_lu3Hs.fasta -dbtype nucl -parse_seqids -out GreenGenome -title "Tcr Green genome chrom. scafs."
 ```
 
-Trying to use blastn to match chromosomes
+Trying to use `blastn` to match chromosomes
 
 ```{bash}
-blastn -db GreenGenome -evalue 1e-20 -perc_identity 90 -query ../../tcrDovetail/version3/mod_map_timema_06Jun2016_RvNkF702.fasta -outfmt 6 -num_threads 80  > Green2Melanic.txt
-}
+blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query ../../tcrDovetail/version3/mod_map_timema_06Jun2016_RvNkF702.fasta -outfmt 6 -num_threads 48 > Green2Melanic.txt
+```
 
 ## Alignment, variant calling and filtering for GBS data
 
@@ -84,3 +84,45 @@ blastn -db GreenGenome -evalue 1e-20 -perc_identity 90 -query ../../tcrDovetail/
 
 ## Alignment, variant calling and filtering for mate-pair data
 
+## LD for refugio versus hwy154
+
+Working from `ld_refugio` and `ld_hwy154` within `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion`. 
+
+* Used `entropy` (version 1.2) to estimate genotypes for both populations.
+
+Perl submission script for Refugio:
+```{perl}
+#!/usr/bin/perl
+#
+# run entropy jobs
+#
+
+use Parallel::ForkManager;
+my $max = 20;
+my $pm = Parallel::ForkManager->new($max);
+
+my $odir = "/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/ld_refugio/Entropy";
+my $base = "/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/ld_refugio/";
+
+foreach $in (@ARGV){
+	$in =~ m/^([a-zA-Z0-9_\-]+)/;
+	$dat = $1;
+	foreach $k (2..3){
+		foreach $ch (0..4){
+		$pm->start and next; ## fork
+		system "entropy -i $in -l 8000 -b 5000 -t 3 -k $k -Q 0 -s 50 -q $base"."ldak$k".".txt -o $odir"."out_$dat"."_k$k"."_ch$ch".".hdf5 -w 0 -m 1\n";
+		$pm->finish;
+		}
+	}
+}
+
+$pm->wait_all_children;
+```
+And then conversion to genotype point estimateas (posteior over k = 2 and 3).
+
+```{bash}
+estpost.entropy -p gprob -s 0 -w 0 *hdf5 -o G_tcr_refugio.txt
+```
+Identical procedure for genotype estimation for Hwy154.
+
+* LD between chromosomes (13 big scaffolds).
