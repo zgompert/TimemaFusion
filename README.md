@@ -17,7 +17,7 @@ Most of the data sets for this project are in `/uufs/chpc.utah.edu/common/home/g
 
 ## Comparative genome alignments
 
-
+From past alignments (details to come) Green 12033 is LG11 (which we are thinking about for the redwood stuff) and Green 7748 = LG8.
 
 ## Nanopore data set
 
@@ -78,6 +78,9 @@ Trying to use `blastn` to match chromosomes
 blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query ../../tcrDovetail/version3/mod_map_timema_06Jun2016_RvNkF702.fasta -outfmt 6 -num_threads 48 > Green2Melanic.txt
 ```
 
+* **NOTE** Might want to try *de novo* assembly of nanopore reads instead, see [canu](https://github.com/marbl/canu).
+
+
 ## Alignment, variant calling and filtering for GBS data
 
 ## Alignment, variant calling and filtering for WGS data
@@ -126,3 +129,5 @@ estpost.entropy -p gprob -s 0 -w 0 *hdf5 -o G_tcr_refugio.txt
 Identical procedure for genotype estimation for Hwy154.
 
 * LD between chromosomes (13 big scaffolds).
+
+R script comparing LD between scaffolds for Refugio versus Hwy154, working in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/ld_hwy154`.
