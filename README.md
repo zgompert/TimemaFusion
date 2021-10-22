@@ -83,7 +83,43 @@ blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query ../../tcrDovetail/
 
 ## Alignment, variant calling and filtering for GBS data
 
-## Alignment, variant calling and filtering for WGS data
+* **rw_plus** data set; includes *T. knulli* and *T. petita*.
+
+1. DNA sequence alignment with `bwa`; used the the *T. knulli* genome.
+
+2. Compress, sort and index alignments with `samtools`.
+
+3. Variant calling with `samtools` (version 1.5) and `bcftools` (version 1.6).
+
+For *T. knulli*:
+
+```{bash}
+module load samtools/1.5
+module load bcftools
+## samtools 1.5
+## bcftools 1.6
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_rw_plus
+samtools mpileup -b bams_knulli -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta -q 20 -Q 30 -I -g -u -t DP,AD,ADF,ADR -o tcr_rw_knulli_variants.bcf
+bcftools call -v -c -p 0.01 -O v -o tcr_rw_knulli_variants.vcf tcr_rw_knulli_variants.bcf
+```
+
+For *T. petita*:
+```{bash}
+module load samtools/1.5
+module load bcftools
+## samtools 1.5
+## bcftools 1.6
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_rw_plus
+samtools mpileup -b bams_petita -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta -q 20 -Q 30 -I -g -u -t DP,AD,ADF,ADR -o tcr_rw_petita_variants.bcf
+bcftools call -v -c -p 0.01 -O v -o tcr_rw_petita_variants.vcf tcr_rw_petita_variants.bcf
+```
+
+* Variant filtering with `vcfFilterKnullipl`, `vcfFilterPetita.pl` and `filterSomeMore.pl`.
+
+I filtered based on the same criteria for both species/data sets: 2X minimum coverage per individual, a minimum of 10 reads supporting the alternative allele, Mann-Whittney P values for BQ, MQ and read position rank-sum tests > 0.005, a minimum ratio of variant confidence to non-reference read depth of 2, a minimum mapping quality of 30, no more than 20% of individuals with missing data, only bi-allelic SNPs, and coverage not > 3 SDs of the mean coverage (at the SNP level).
+
+This left me with **64,650** SNPs for *T. knulli* (N = 138 individuals) and **32,859** SNPs for *T. petita* (N = 69 individuals).
+
 
 ## Alignment, variant calling and filtering for mate-pair data
 
