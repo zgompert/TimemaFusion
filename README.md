@@ -191,6 +191,57 @@ save(list=ls(),file="init_petita.rdat")
 ## when you run entropy use provide the input values as, e.g., -q ldak2.txt
 ## also set -s to something like 50
 ```
+Bayesian genotype estimates were then obtained running entropy as follows (input files = `filtered_tknulli_variants.gl` and `filtered_tpetita_variants.gl`):
+
+```{bash}
+#!/bin/sh 
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=8
+#SBATCH --account=gompert
+#SBATCH --partition=notchpeak
+#SBATCH --job-name=entropy
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load gsl
+module load hdf5
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/genotypes_rw
+
+perl RunEntropyFork.pl filtered_*gl
+```
+
+```{perl}
+#!/usr/bin/perl
+#
+# run entropy jobs
+#
+
+use Parallel::ForkManager;
+my $max = 20;
+my $pm = Parallel::ForkManager->new($max);
+
+my $odir = "/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/genotypes_rw/Entropy/";
+my $base = "/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/genotypes_rw/";
+
+foreach $in (@ARGV){
+	$in =~ m/^([a-zA-Z0-9_\-]+)/;
+	$dat = $1;
+	$in =~ m/_t([a-z]+)_/;
+	$sp = $1;
+	sleep(2);
+	foreach $k (2..3){
+		foreach $ch (0..4){
+		$pm->start and next; ## fork
+		system "entropy -i $in -l 8000 -b 5000 -t 3 -k $k -Q 0 -s 50 -q $base"."ldak$k"."_$sp.txt -o $odir"."out_$dat"."_k$k"."_ch$ch".".hdf5 -w 0 -m 1\n";
+		$pm->finish;
+		}
+	}
+}
+
+$pm->wait_all_children;
+```
 
 ## LD for refugio versus hwy154
 
