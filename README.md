@@ -131,3 +131,5 @@ Identical procedure for genotype estimation for Hwy154.
 * LD between chromosomes (13 big scaffolds).
 
 R script comparing LD between scaffolds for Refugio versus Hwy154, working in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/ld_hwy154`.
+
+Patterns of LD most consistent with a fusion of 42912 and 42935 for Refugio. Also the inversion on LG8=7748 really pops in the LD plots.
