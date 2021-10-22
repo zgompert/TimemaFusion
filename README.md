@@ -120,6 +120,14 @@ I filtered based on the same criteria for both species/data sets: 2X minimum cov
 
 This left me with **64,650** SNPs for *T. knulli* (N = 138 individuals) and **32,859** SNPs for *T. petita* (N = 69 individuals).
 
+* Lastly, vcf files were converted to genotype likelihood format.
+
+```{bash}
+perl vcf2glSamt.pl 0.0 morefilter_filtered2x_tcr_rw_knulli_variants.vcf
+#Number of loci: 64650; number of individuals 138
+perl vcf2glSamt.pl 0.0 morefilter_filtered2x_tcr_rw_petita_variants.vcf 
+#Number of loci: 32859; number of individuals 69
+```
 
 ## Alignment, variant calling and filtering for mate-pair data
 
