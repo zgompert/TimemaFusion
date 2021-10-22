@@ -131,6 +131,67 @@ perl vcf2glSamt.pl 0.0 morefilter_filtered2x_tcr_rw_petita_variants.vcf
 
 ## Alignment, variant calling and filtering for mate-pair data
 
+## Genotype inference for *T. knulli* and *T. petita* (redwood project)
+
+Working in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/genotypes_rw` with gl files linked from `/uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/variants_rw_plus`.
+
+I estimated genotypes using `entropy` (version 1.2). Estimates were based on k = 2,3 and used starting values from LDA of PC scores.
+
+* Generate initial values for admixture proportions.
+
+Calculate simple genotype point estimates.
+```{bash}
+perl gl2genest.pl af_filtered_tknulli_variants.txt filtered_tknulli_variants.gl
+perl gl2genest.pl af_filtered_tpetita_variants.txt filtered_tpetita_variants.gl
+```
+Generate initial values for admixture proportions.
+```{R}
+## read genotype estimates, i.e., g = 0 * Pr(g=0) + 1 * Pr(g=1) + 2 * Pr(g=2)
+## row = locus, column = individual
+L<-64650
+N<-138
+g<-matrix(scan("pntest_filtered_tknulli_variants.txt",n=N*L,sep=" "),nrow=L,ncol=N,byrow=T)
+
+## pca on the genotype covariance matrix
+pcgcov<-prcomp(x=t(g),center=TRUE,scale=FALSE)
+
+## kmeans and lda
+library(MASS)
+k2<-kmeans(pcgcov$x[,1:5],2,iter.max=10,nstart=10,algorithm="Hartigan-Wong")
+k3<-kmeans(pcgcov$x[,1:5],3,iter.max=10,nstart=10,algorithm="Hartigan-Wong")
+
+ldak2<-lda(x=pcgcov$x[,1:5],grouping=k2$cluster,CV=TRUE)
+ldak3<-lda(x=pcgcov$x[,1:5],grouping=k3$cluster,CV=TRUE)
+
+write.table(round(ldak2$posterior,5),file="ldak2_knulli.txt",quote=F,row.names=F,col.names=F)
+write.table(round(ldak3$posterior,5),file="ldak3_knulli.txt",quote=F,row.names=F,col.names=F)
+
+save(list=ls(),file="init_knulli.rdat")
+
+L<-32859
+N<-69
+g<-matrix(scan("pntest_filtered_tpetita_variants.txt",n=N*L,sep=" "),nrow=L,ncol=N,byrow=T)
+
+## pca on the genotype covariance matrix
+pcgcov<-prcomp(x=t(g),center=TRUE,scale=FALSE)
+
+## kmeans and lda
+library(MASS)
+k2<-kmeans(pcgcov$x[,1:5],2,iter.max=10,nstart=10,algorithm="Hartigan-Wong")
+k3<-kmeans(pcgcov$x[,1:5],3,iter.max=10,nstart=10,algorithm="Hartigan-Wong")
+
+ldak2<-lda(x=pcgcov$x[,1:5],grouping=k2$cluster,CV=TRUE)
+ldak3<-lda(x=pcgcov$x[,1:5],grouping=k3$cluster,CV=TRUE)
+
+write.table(round(ldak2$posterior,5),file="ldak2_petita.itxt",quote=F,row.names=F,col.names=F)
+write.table(round(ldak3$posterior,5),file="ldak3_petita.txt",quote=F,row.names=F,col.names=F)
+
+save(list=ls(),file="init_petita.rdat")
+
+## when you run entropy use provide the input values as, e.g., -q ldak2.txt
+## also set -s to something like 50
+```
+
 ## LD for refugio versus hwy154
 
 Working from `ld_refugio` and `ld_hwy154` within `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion`. 
