@@ -6,12 +6,12 @@ Characterizing chromosomal fusion(s) in *Timema* stick insects
 
 Most of the data sets for this project are in `/uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/`; the nanopore data for *T. cristinae* from Refugio are in `/uufs/chpc.utah.edu/common/home/gompert-group3/data/nanoporereads/TimemaL1`.
 
-0. Whole genomes for compariative genome alignment
-1. **hwy154** = GBS data
-2. **fha_mapping_sample** = GBS data
-3. **n1_doro** = GBS data
-4. **refugio** and **refugio_2019** = GBS data
-5. **rw_plus** = GBS data
+0. Whole genomes for compariative genome alignment, HiC genomes = *T. cristinae* striped, *T. cristinae* green unstriped, *T. knulli*, *T. podura* and *T. chumash* (don't necessarily care about last two for this project).
+1. **hwy154** = GBS data, LD for comparison with Refugio to test of fusion
+2. **fha_mapping_sample** = GBS data, LD as well?
+3. **n1_doro** = GBS data, LD as well?
+4. **refugio** and **refugio_2019** = GBS data, LD to test for fusion
+5. **rw_plus** = GBS data, plans for mapping performance, patterns of LD, ect.
 6. **refugio_nanoper** = nanpore data from 6 *Timema cristinae* from Refugio, could provide direct evidence of a fusion on Refugio. 
 7. **matepair_SVs** = matepair data form Kay's paper, could provide direct evidence of a fusion on Refugio.
 
@@ -130,6 +130,131 @@ Identical procedure for genotype estimation for Hwy154.
 
 * LD between chromosomes (13 big scaffolds).
 
-R script comparing LD between scaffolds for Refugio versus Hwy154, working in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/ld_hwy154`.
+Next I calculated with and between chromosome (13 big scaffolds) LD for Hwy154 and Refugio. The key results and files are in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/ld_hwy154` and  `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/ld_Refugio`. Here is the R script (InterChromLD.R).
 
-Patterns of LD most consistent with a fusion of 42912 and 42935 for Refugio. Also the inversion on LG8=7748 really pops in the LD plots.
+```{R}
+library(data.table)
+library(RColorBrewer)
+## first hwy154
+
+## read genotype estimates from entropy
+G<-as.matrix(fread("G_tcr_hwy154.txt",sep=",",header=FALSE))
+
+dim(G)
+#[1]   596 12616
+# 596 inds. 12616 SNPs
+
+## PCA mostly for fun, see how much structure
+o<-prcomp(G,center=TRUE)
+## PC 1 ~2%, clearly two clusters
+
+## get snp data, scaffold and position
+snps<-as.matrix(read.table("SNPs_scaf_pos.txt",header=FALSE))
+scafs<-scan("bigScafs.txt")
+
+## split G into list by LG=scaffold
+G_LG<-vector("list",13)
+for(k in 1:13){
+	x<-which(snps[,1]==scafs[k])
+	G_LG[[k]]<-G[,x]
+}
+
+## get mean correlation between LGs
+Chrom_cors<-matrix(NA,nrow=(13*12)/2,ncol=3)
+k<-1
+for(a in 1:12){for(b in (a+1):13){
+	Chrom_cors[k,1]<-scafs[a]
+	Chrom_cors[k,2]<-scafs[b]
+	o<-cor(G_LG[[a]],G_LG[[b]])
+	Chrom_cors[k,3]<-mean(o^2)	
+	k<-k+1
+}}
+
+## now Refugio
+
+## read genotype estimates from entropy
+G_r<-as.matrix(fread("../ld_refugio/G_tcr_refugio.txt",sep=",",header=FALSE))
+
+dim(G_r)
+#[1]   238 74658
+# 238 inds. 74658 SNPs
+
+## PCA mostly for fun, see how much structure
+o<-prcomp(G_r,center=TRUE)
+## PC 1 ~2%, gradient on 1, a few oddballs on 2
+
+## get snp data, scaffold and position
+snps_r<-as.matrix(read.table("../ld_refugio/SNPs_scaf_pos.txt",header=FALSE))
+
+## split G into list by LG=scaffold
+G_LG_r<-vector("list",13)
+for(k in 1:13){
+	x<-which(snps_r[,1]==scafs[k])
+	G_LG_r[[k]]<-G_r[,x]
+}
+
+## get mean correlation between LGs
+Chrom_cors_r<-matrix(NA,nrow=(13*12)/2,ncol=3)
+k<-1
+for(a in 1:12){for(b in (a+1):13){
+	cat(paste(a,b,"\n"))
+	Chrom_cors_r[k,1]<-scafs[a]
+	Chrom_cors_r[k,2]<-scafs[b]
+	o<-cor(G_LG_r[[a]],G_LG_r[[b]])
+	Chrom_cors_r[k,3]<-mean(o^2)	
+	k<-k+1
+}}
+
+## comparison
+plot(Chrom_cors[,3],Chrom_cors_r[,3],pch=19,xlab="Mean LD (r2) Hwy154",ylab="Mean LD (r2) Refugio")
+o<-lm(Chrom_cors_r[,3] ~ Chrom_cors[,3])
+abline(o$coefficients)
+
+## this one stands out, make a plot
+Chrom_cors_r[which(Chrom_cors_r[,3] > 0.0047),]
+## 42912 vs 42935
+a<-9 ## 42912
+b<-10 ## 42935
+cc_9x10_h<-cor(G_LG[[a]],G_LG[[b]])
+cc_9x10_r<-cor(G_LG_r[[a]],G_LG_r[[b]])
+cc_9x9_h<-cor(G_LG[[a]],G_LG[[a]])
+cc_10x10_h<-cor(G_LG[[b]],G_LG[[b]])
+cc_9x9_r<-cor(G_LG_r[[a]],G_LG_r[[a]])
+cc_10x10_r<-cor(G_LG_r[[b]],G_LG_r[[b]])
+
+bnds<-c(-1,0.005,0.01,0.05,0.1,0.5,1)
+bnds<-c(-1,0.1,0.5,1)
+cs<-brewer.pal(n=6,"Reds")[c(1,5,6)]
+
+image(cc_9x10_h^2,col=cs,breaks=bnds)
+image(cc_9x9_h^2,col=cs,breaks=bnds)
+image(cc_10x10_h^2,col=cs,breaks=bnds)
+image(cc_9x10_r^2,col=cs,breaks=bnds)
+image(cc_9x9_r^2,col=cs,breaks=bnds)
+image(cc_10x10_r^2,col=cs,breaks=bnds)
+
+
+for(a in 1:12){for(b in (a+1):13){
+	nm<-paste("ld_",scafs[a],"_",scafs[b],".png",sep="")	
+	oh_11<-cor(G_LG[[a]],G_LG[[a]])^2
+	oh_22<-cor(G_LG[[b]],G_LG[[b]])^2
+	oh_12<-cor(G_LG[[a]],G_LG[[b]])^2
+	or_11<-cor(G_LG_r[[a]],G_LG_r[[a]])^2
+	or_22<-cor(G_LG_r[[b]],G_LG_r[[b]])^2
+	or_12<-cor(G_LG_r[[a]],G_LG_r[[b]])^2
+	png(nm,width=12000,height=18000,units="px")
+	par(mfrow=c(3,2))
+	image(oh_11,col=cs,breaks=bnds)
+	image(or_11,col=cs,breaks=bnds)
+	image(oh_22,col=cs,breaks=bnds)
+	image(or_22,col=cs,breaks=bnds)
+	image(oh_12,col=cs,breaks=bnds)
+	image(or_12,col=cs,breaks=bnds)
+	dev.off()
+}}
+save(list=ls(),file="LD.rdat")
+}}
+```
+
+
+Patterns of LD most consistent with a fusion of 42912 and 42935 for Refugio. Also the inversion on LG8=7748 is really apparent in the LD plots. At this point, there is nothing obvioulsy pointing to a fusion invovling 7748 (LG8), but let's see what the nanopore data show.
