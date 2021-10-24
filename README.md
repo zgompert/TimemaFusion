@@ -61,22 +61,60 @@ done
 
 * Identifying pairs of chromosomes with translocations
 
-The 13 (unambiguous) large scaffold (> 10 Mbps) from the green genome are listed, along with their sizes in bps, in `/uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist/greenGenomeLGscafs.txt`. I used this to extract these scaffolds from the genome with `samtools` (version 1.12)
+The 13 (unambiguous) large scaffold (> 10 Mbps) from the green striped genome are listed, along with their sizes in bps, in `/uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist/greenGenomeLGscafs.txt`. I used this to extract these scaffolds from the genome with `samtools` (version 1.12)
 
 ```{bash}
 samtools faidx timema_cristinae_12Jun2019_lu3Hs.fasta -r greenLGRegions.txt -o timema_cristinae_LGs_12Jun2019_lu3Hs.fasta
 ```
-Next I created a blastable data base to match scaffolds from the melanic genome to the green genome. This was done with `blast` (version 2.11.0).
+Next I created a blastable data base to match scaffolds from the melanic genome to the green striped genome. This was done with `blast` (version 2.11.0).
 
 ```{bash}
 makeblastdb -in timema_cristinae_LGs_12Jun2019_lu3Hs.fasta -dbtype nucl -parse_seqids -out GreenGenome -title "Tcr Green genome chrom. scafs."
 ```
 
-Trying to use `blastn` to match chromosomes
+Trying to use `blastn` to match chromosomes. First, I ran a strict blast search.
 
 ```{bash}
 blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query ../../tcrDovetail/version3/mod_map_timema_06Jun2016_RvNkF702.fasta -outfmt 6 -num_threads 48 > Green2Melanic.txt
 ```
+Then, I worte a `perl` script to sum the total alignment length between each of the 13 scaffolds from the green striped genome and the 13 LGs we have defined for the melanic genome. I could also do this at the scaffold level (as it is unlikely that all scaffold assignments to LGs from the mapping families are correct), but this seems more useful as the main goal is to preserve as many of the LG IDs for the newer genome as possible to maximize consistency across papers (i.e., using the best overall match between old LGs and new scaffolds is sufficient).
+
+```{perl}
+#!/usr/bin/perl
+#
+# compute total alignment lengths between melanic LGs and green stripe scaffolds
+#
+
+$blast = "Green2Melanic.txt";
+
+## column headers, see blastn -help for details
+## qaccver saccver pident length mismatch gapopen qstart qend sstart send evalue bitscore
+
+
+open(IN, $blast) or die "failed to read $blast\n";
+open(OUT, "> AlnGreenStr2Melanic.txt") or die "failed to write OUT\n";
+
+while(<IN>){
+        chomp;
+        $_ =~ m/LG\-(\d+)\S+\s+Sclu3Hs_(\d+)\S+\s+\S+\s+(\d+)/ or print "No match here: $_\n";
+        $lg = $1;
+        $sc = $2;
+        $len = $3;
+        $aln = "$sc"."_$lg";
+        if(defined $alns{$aln}){
+                $alns{$aln} += $len;
+        }
+        else {
+                $alns{$aln} = $len;
+        }
+}
+close(IN);
+foreach $aln (sort keys %alns){
+        print OUT "$aln $alns{$aln}\n";
+}
+```
+
+
 
 * **NOTE** Might want to try *de novo* assembly of nanopore reads instead, see [canu](https://github.com/marbl/canu). Also, evidence from TRA transition calls doesn't really support merger of LG 8 and 11 (7748 and 12033), or of 42912 and 42934, which show highest interchromosomal LD in Refugio. TRA call might not be that useful. Instead use these data for *de novo* assembly and maybe for identifying other SVs (inversions and deletions) relative to Hwy154 (nice because both based on green genome).
 
