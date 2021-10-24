@@ -280,6 +280,22 @@ foreach $in (@ARGV){
 
 $pm->wait_all_children;
 ```
+Last, I used `estpost.entropy` (version 2.0) to summarize the posteriores and specifically obtain point estimates of genotypes averaging over the 5 chains and 2 values of *k*.
+
+```{bash}
+estpost.entropy -p gprob -s 0 -w 0 *hdf5 -o G_tcr_refugio.txt
+#parameter dimensions for gprob: loci = 64650, ind = 138, genotypes = 3, chains = 10
+estpost.entropy -p gprob -s 0 -w 0 out_filtered_tpetita_variants_k*hdf5 -o G_tpetita.txt
+#parameter dimensions for gprob: loci = 32859, ind = 69, genotypes = 3, chains = 10
+```
+
+## Multilocus mapping from *T. knulli* and *T. petita* experiments
+
+Old data and analyses are in `/uufs/chpc.utah.edu/common/home/u6000989/projects/timema_confiers/redwood_gwa/`. My original analyses are described on the legacy lab site [Timema redwood](https://sites.google.com/site/gompertlabnotes/home/researcher-pages/zach-gompert/timema/timema-redwood). 
+
+The goal is to map performance (weight, weight change between 15 and 21 days and survival) on *Ceanothus* and redwoods.
+
+
 
 ## LD for refugio versus hwy154
 
