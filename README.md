@@ -17,7 +17,125 @@ Most of the data sets for this project are in `/uufs/chpc.utah.edu/common/home/g
 
 ## Comparative genome alignments
 
-From past alignments (details to come) Green 12033 is LG11 (which we are thinking about for the redwood stuff) and Green 7748 = LG8.
+From past alignments (details to come) Green striped 12033 is LG11 (which we are thinking about for the redwood stuff) and Green 7748 = LG8.
+
+As a first, more general pass, I am assessing synteny (not colinearity) simply using blast. This seems to be working well.
+
+* First, LGs from melanic *T. cristinae* versus the green striped *T. cristinae* HiC genome.
+
+The 13 (unambiguous) large scaffold (> 10 Mbps) from the green striped genome are listed, along with their sizes in bps, in `/uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist/greenGenomeLGscafs.txt`. I used this to extract these scaffolds from the genome with `samtools` (version 1.12)
+
+```{bash}
+samtools faidx timema_cristinae_12Jun2019_lu3Hs.fasta -r greenLGRegions.txt -o timema_cristinae_LGs_12Jun2019_lu3Hs.fasta
+```
+Next I created a blastable data base to match scaffolds from the melanic genome to the green striped genome. This was done with `blast` (version 2.11.0).
+
+```{bash}
+makeblastdb -in timema_cristinae_LGs_12Jun2019_lu3Hs.fasta -dbtype nucl -parse_seqids -out GreenGenome -title "Tcr Green genome chrom. scafs."
+```
+
+Trying to use `blastn` to match chromosomes. First, I ran a strict blast search.
+
+```{bash}
+blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query ../../tcrDovetail/version3/mod_map_timema_06Jun2016_RvNkF702.fasta -outfmt 6 -num_threads 48 > Green2Melanic.txt
+```
+Then, I worte a `perl` script to sum the total alignment length between each of the 13 scaffolds from the green striped genome and the 13 LGs we have defined for the melanic genome. I could also do this at the scaffold level (as it is unlikely that all scaffold assignments to LGs from the mapping families are correct), but this seems more useful as the main goal is to preserve as many of the LG IDs for the newer genome as possible to maximize consistency across papers (i.e., using the best overall match between old LGs and new scaffolds is sufficient). It is important (empirically) to only count long alignments; I tried counting all and you just get noise.
+
+```{perl}
+#!/usr/bin/perl
+#
+# compute total alignment lengths between melanic LGs and green stripe scaffolds
+#
+
+$blast = "Green2Melanic.txt";
+
+## column headers, see blastn -help for details
+## qaccver saccver pident length mismatch gapopen qstart qend sstart send evalue bitscore
+
+
+open(IN, $blast) or die "failed to read $blast\n";
+open(OUT, "> AlnGreenStr2Melanic.txt") or die "failed to write OUT\n";
+
+while(<IN>){
+        chomp;
+        $_ =~ m/LG\-(\d+)\S+\s+Sclu3Hs_(\d+)\S+\s+\S+\s+(\d+)/ or print "No match here: $_\n";
+        $lg = $1;
+        $sc = $2;
+        $len = $3;
+        $aln = "$sc"."_$lg";
+        if($len > 10000){ ## only consider long alignments
+                if(defined $alns{$aln}){
+                        $alns{$aln} += $len;
+                }
+                else {
+                        $alns{$aln} = $len;
+                }
+        }
+}
+close(IN);
+foreach $aln (sort keys %alns){
+        print OUT "$aln $alns{$aln}\n";
+}
+```
+
+Last, I used `R` to summarize the alignments and map the melanic LGs to the big scaffolds (chromosomes) from the green striped *T. cristinae* genome.
+
+```{R}
+aln<-read.table("AlnGreenStr2Melanic.txt",header=FALSE)
+
+amat<-matrix(as.numeric(unlist(strsplit(x=as.character(aln[,1]),"_"))),nrow=59,ncol=2,byrow=TRUE)
+
+aln_mat<-matrix(0,nrow=13,ncol=14)
+usc<-unique(amat[,1])
+for(i in 1:13){for(j in 1:14){
+    k<-j-1
+    a<-which(amat[,1]==usc[i] & amat[,2]==k)
+    if(length(a) == 1){
+            aln_mat[i,j]<-aln[a,2]
+    }
+}}
+
+colnames(aln_mat)<-0:13
+row.names(aln_mat)<-usc
+
+for(i in 1:13){
+    aln_mat[i,]<-aln_mat[i,]/sum(aln_mat[i,])
+    }
+
+
+library(fields)
+pdf("GreenStr2Melanic.pdf",width=6,height=6)
+cs<-hcl.colors(10, "YlOrRd", rev = TRUE)
+brks<-c(-0.01,seq(0.1,0.9,.1),1.01)
+
+image.plot(aln_mat,axes=FALSE,col=cs,breaks=brks)
+axis(1,at=(0:12)/12,usc,las=2)
+axis(2,at=(0:13)/13,0:13)
+box()
+dev.off()
+```
+The map looks great: [GreenStr2Melanic.pdf](https://github.com/zgompert/TimemaFusion/files/7412533/GreenStr2Melanic.pdf)
+
+Here is a table relating the chromosomes (16,151 was split between 9 and 13 and most of NA=0 was 14,101, which is the new 13)
+
+| Melanic LG | Green Stripe chrom. |
+|-----------:|--------------------:|
+| 1 | 8483 |
+| 2 | 14640 |
+| 3 | 42935 |
+| 4 | 42912 | 
+| 5 | 18722 |
+| 6 | 9928 |
+| 7 | 10660 |
+| 8 | 7748 |
+| 9 | 16151 |
+| 10 | 14160 |
+| 11 | 12033 |
+| 12 | 12380 |
+| 0 | 14101 |
+
+Old 0 is now and hereafter 13 (i.e., 14101 = LG 13) for new numbering.
+
 
 ## Nanopore data set
 
@@ -48,6 +166,7 @@ for fi in *.bam; do
 filename=$(awk 'FNR ==1{ print FILENAME}' "$fi"| awk -Fm '{print $1}')
 sniffles -m $fi -v "$filename"gt.vcf --Ivcf TM_merged_SURVIVOR_1kbpdist_typesavenew.vcf
 done
+
 }
 ```
 
@@ -58,61 +177,6 @@ done
 * Code and ideas for visualizing translocations
 
 [SV annotation](https://bioconductor.org/packages/devel/bioc/vignettes/StructuralVariantAnnotation/inst/doc/vignettes.html)
-
-* Identifying pairs of chromosomes with translocations
-
-The 13 (unambiguous) large scaffold (> 10 Mbps) from the green striped genome are listed, along with their sizes in bps, in `/uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist/greenGenomeLGscafs.txt`. I used this to extract these scaffolds from the genome with `samtools` (version 1.12)
-
-```{bash}
-samtools faidx timema_cristinae_12Jun2019_lu3Hs.fasta -r greenLGRegions.txt -o timema_cristinae_LGs_12Jun2019_lu3Hs.fasta
-```
-Next I created a blastable data base to match scaffolds from the melanic genome to the green striped genome. This was done with `blast` (version 2.11.0).
-
-```{bash}
-makeblastdb -in timema_cristinae_LGs_12Jun2019_lu3Hs.fasta -dbtype nucl -parse_seqids -out GreenGenome -title "Tcr Green genome chrom. scafs."
-```
-
-Trying to use `blastn` to match chromosomes. First, I ran a strict blast search.
-
-```{bash}
-blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query ../../tcrDovetail/version3/mod_map_timema_06Jun2016_RvNkF702.fasta -outfmt 6 -num_threads 48 > Green2Melanic.txt
-```
-Then, I worte a `perl` script to sum the total alignment length between each of the 13 scaffolds from the green striped genome and the 13 LGs we have defined for the melanic genome. I could also do this at the scaffold level (as it is unlikely that all scaffold assignments to LGs from the mapping families are correct), but this seems more useful as the main goal is to preserve as many of the LG IDs for the newer genome as possible to maximize consistency across papers (i.e., using the best overall match between old LGs and new scaffolds is sufficient).
-
-```{perl}
-#!/usr/bin/perl
-#
-# compute total alignment lengths between melanic LGs and green stripe scaffolds
-#
-
-$blast = "Green2Melanic.txt";
-
-## column headers, see blastn -help for details
-## qaccver saccver pident length mismatch gapopen qstart qend sstart send evalue bitscore
-
-
-open(IN, $blast) or die "failed to read $blast\n";
-open(OUT, "> AlnGreenStr2Melanic.txt") or die "failed to write OUT\n";
-
-while(<IN>){
-        chomp;
-        $_ =~ m/LG\-(\d+)\S+\s+Sclu3Hs_(\d+)\S+\s+\S+\s+(\d+)/ or print "No match here: $_\n";
-        $lg = $1;
-        $sc = $2;
-        $len = $3;
-        $aln = "$sc"."_$lg";
-        if(defined $alns{$aln}){
-                $alns{$aln} += $len;
-        }
-        else {
-                $alns{$aln} = $len;
-        }
-}
-close(IN);
-foreach $aln (sort keys %alns){
-        print OUT "$aln $alns{$aln}\n";
-}
-```
 
 
 
