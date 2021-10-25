@@ -136,6 +136,22 @@ Here is a table relating the chromosomes (16,151 was split between 9 and 13 and 
 
 Old 0 is now and hereafter 13 (i.e., 14101 = LG 13) for new numbering.
 
+* *T. knulli* genome versus the green striped *T. cristinae* genome. As with melanic versus green striped *T. cristinae*, I am using blast to detect homologous chromosomes between these species. 
+
+I am again using the green striped blastable data base. I am working in `/uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli`. There are 12 large scaffolds for *T. knulli* (not 13) consistent with karyotype data I think. I extracted these with `samtools` (version 1.12).
+
+```{bash}
+samtools faidx mod_hic_output.fasta -r knulliGenomeLGscafs.txt -o tknulli_chroms_hic_output.fasta
+```
+Then, I used `blastn` (version 2.11.0) for the local blast.
+
+```{bash}
+module load blast/2.11.0
+cd /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli
+blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query tknulli_chroms_hic_output.fasta -outfmt 6 -num_threads 72 > Green2Knulli.txt
+## column headers, see blastn -help for details
+## qaccver saccver pident length mismatch gapopen qstart qend sstart send evalue bitscore
+```
 
 ## Nanopore data set
 
