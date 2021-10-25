@@ -295,7 +295,94 @@ Old data and analyses are in `/uufs/chpc.utah.edu/common/home/u6000989/projects/
 
 The goal is to map performance (weight, weight change between 15 and 21 days and survival) on *Ceanothus* and redwoods.
 
+* First, I formatted the genetic and phenotypic data from the experiment for mapping with gemma. This includes splitting the data set by treatment (host) and removing the effects of initial weight/stage on the performance traits. I am using these five traits:
 
+1. 15 day weight, control sex and stage
+2. 21 day weight, control sex and stage
+3. Survival
+4. 21-15 day weight change, control sex and stage
+5. 21-15 day weight change, control sex
+
+See [formatPhenoGeno.R](formatPhenoGeno.R).
+
+* Add SNP names and placeholder alleles IDs (don't really matter) to the genotype files for `gemma`.
+
+```{bash}
+perl mkGenoFile.pl geno_*
+```
+
+```{perl}
+#!/usr/bin/perl
+#
+# formats the geno file
+#
+
+## get actual SNP ids
+open(IN, "Snps.txt") or die "failed to read SNPs file\n";
+while(<IN>){
+        chomp;
+        push(@snps,$_);
+}
+close(IN);
+
+foreach $in (@ARGV){ ## geno files
+
+        ## read and write geno file
+        open(IN, $in) or die "failed to read the genotype file\n";
+        $out = "mod_$in";
+        open(OUT, "> $out") or die "failed to write\n";
+        $i = 0;
+        while(<IN>){
+                chomp;
+                s/ /, /g or die "failed space sub\n";
+                print OUT "$snps[$i], A, T, $_\n";
+                $i++;
+        }
+        close(IN);
+        close(OUT);
+}
+```
+
+* Run the BSLMM in `gemma` (Version 0.95alpha), 10 chains per phenotype, both treatments, full and subset data sets without BCTURN and all five performance traits.
+
+```{bash}
+module load gemma
+# Version 0.95alpha
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/redwood_gwa
+
+perl RunGemmaFork.pl mod_geno*
+```
+
+```{perl}
+#!/usr/bin/perl
+#
+# run gemma jobs
+#
+
+use Parallel::ForkManager;
+my $max = 48;
+my $pm = Parallel::ForkManager->new($max);
+
+foreach $g (@ARGV){
+	$ph = $g;
+	$ph =~ s/mod_g/ph/;
+	$base = $g;
+	$base =~ s/mod_geno_//;
+	$base =~ s/\.txt//;
+	foreach $ch (0..9){
+		system "sleep 2\n";
+		foreach $trait (1..5){
+			$pm->start and next; ## fork
+			$out = "o_tknulli_$base"."_ph$trait"."_ch$ch";
+			system "gemma -g $g -p $ph -bslmm 1 -n $trait -maf 0.0 -w 200000 -s 1000000 -o $out\n";
+			$pm->finish;
+		}
+	}
+}
+
+$pm->wait_all_children;
+```
 
 ## LD for refugio versus hwy154
 
