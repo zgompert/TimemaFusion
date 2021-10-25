@@ -464,6 +464,17 @@ foreach $g (@ARGV){
 $pm->wait_all_children;
 ```
 
+* Next, I summarized the relevant posteriors for mapping.
+
+Posterior estimates of hyperparameters (see ).
+```{bash}
+perl calpost.pl o_tknulli_RW_ph*ch0.hyp.txt
+perl calpost.pl o_tknulli_RW_sub_ph*ch0.hyp.txt
+perl calpost.pl o_tknulli_C_ph*ch0.hyp.txt
+perl calpost.pl o_tknulli_C_sub_ph*ch0.hyp.txt
+```
+
+
 ## LD for refugio versus hwy154
 
 Working from `ld_refugio` and `ld_hwy154` within `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion`. 
