@@ -466,7 +466,7 @@ $pm->wait_all_children;
 
 * Next, I summarized the relevant posteriors for mapping.
 
-Posterior estimates of hyperparameters (see ).
+Posterior estimates of hyperparameters (see [calpost.pl](calpost.pl)).
 ```{bash}
 perl calpost.pl o_tknulli_RW_ph*ch0.hyp.txt
 perl calpost.pl o_tknulli_RW_sub_ph*ch0.hyp.txt
@@ -475,6 +475,55 @@ perl calpost.pl o_tknulli_C_sub_ph*ch0.hyp.txt
 ```
 
 Mostly these seem reasonable, though survival (phenotype 3) seems too high (probably not reliable).
+
+Extracted posterior inclusion probabilities and made some plots of PIPs, no real evidence that scaffol 500 (the SV scaffold) pops out (see [grabPips.pl](grabPips.pl)).
+```{bash}
+perl grabPips.pl o_tknulli_*ch0.param.txt
+```
+```{R}
+## summarize PIPs for knulli
+pf<-list.files(pattern="pip") ## 20 files, C, Csub, RW, RW sub, 5 pheno each
+L<-64650
+K<-20
+
+pips<-matrix(NA,nrow=L,ncol=K)
+for(i in 1:K){
+        pips[,i]<-scan(pf[i])
+}
+
+## on C
+par(mfrow=c(2,5))
+for(i in 1:10){
+        plot(pips[,i])
+}
+
+## on RW
+par(mfrow=c(2,5))
+for(i in 11:20){
+        plot(pips[,i])
+}
+
+snps<-read.table("../output/snpList.txt",header=FALSE)
+
+sc500<-snps[,1]==500
+
+
+cs<-c("darkgray","red")
+cl<-1.5;cm<-1.5
+titls<-rep(c("w15d","w21d","surv","dW","dW2"),4)
+
+pdf("KnulliPipsC.pdf",width=10,height=12)
+par(mfrow=c(3,2))
+par(mar=c(4.5,5,2.5,1))
+for(i in 1:5){
+        a<-which(pips[,i] > 0.001) 
+        plot((1:L)[a],pips[a,i],pch=19,col=cs[sc500+1][a],xlab="SNP number",ylab="PIP",cex.lab=cl)
+        title(main=titls[i],cex.main=cm)
+}
+dev.off()
+## same for other combinations, see summarizePips.R
+```
+
 
 ## LD for refugio versus hwy154
 
