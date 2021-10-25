@@ -1,0 +1,150 @@
+## orindation of genotype data, and formatting for gemma
+library(data.table)
+L<-64650
+N<-138
+
+## T. knulli phenotypes/populations ##
+g<-as.matrix(fread("../genotypes_rw/Entropy/G_tknulli.txt",sep=",",header=FALSE))
+
+o<-prcomp(g,center=TRUE,scale=FALSE)
+plot(o)
+plot(o$x[,1],o$x[,2],pch=19)
+## first PC = 22%, 2 clear clusters
+
+dat<-read.table("/uufs/chpc.utah.edu/common/home/u6000989/projects/timema_confiers/timemaRw/RedwoodDatCombined.csv",header=TRUE,sep=",")
+ph<-dat[1:138,]
+
+snps<-read.table("TknulliSnps.txt",header=FALSE)
+rev(sort(table(snps[,1])))
+##   29  6886   775  6852  6839    30  6895  1305   934   500   813  6840  1113 
+##15995  9947  5970  5856  4514  4112  3849  3610  3610  2557  2528  1326    16 
+##  792     6  6880  1004   121    25  1740   656  2762   697   498   267    48 
+##   11    10     8     8     8     8     7     7     6     6     6     6     6 
+## There are 12 large scaffolds with many SNPs, these are my LGs, which have not yet been matched up with other LGs
+
+LGs<-as.numeric(names(which(table(snps[,1]) > 100)))
+
+cs<-c(NA,"cadetblue",NA,"darkolivegreen","chocolate","darkgoldenrod1")
+sy<-c(3,NA,4)
+pdf("knulliPca.pdf",width=6,height=6)
+par(mar=c(5,5,.5,.5))
+plot(o$x[,1],o$x[,2],pch=sy[as.numeric(ph$Host)],col=cs[as.numeric(ph$Population)],xlab="PC1",ylab="PC2",cex.lab=1.4,cex.axis=1.1)
+legend(-80,70,c("BCE","BCSH","BCXD","BCTURN"),fill=cs[c(2,4,6,5)],bty='n')
+legend(-80,40,c("C","RW"),pch=c(3,4),bty='n')
+dev.off()
+## BCTURN clearly different than others, PC2 pulls out BCE on C (versus everyone else)
+
+
+pdf("TknulLgPCA.pdf",width=10,height=10)
+par(mfrow=c(2,2))
+par(mar=c(4,5,2,1))
+
+for(i in 1:12){
+	a<-which(snps[,1]==LGs[i])
+	olg<-prcomp(g[,a],center=TRUE,scale=FALSE)
+	pcs<-summary(olg)
+	pc1<-round(pcs$importance[2,1]*100,1)
+	pc2<-round(pcs$importance[2,2]*100,1)
+	plot(olg$x[,1],olg$x[,2],pch=sy[as.numeric(ph$Host)],col=cs[as.numeric(ph$Population)],xlab=paste("PC1 (",pc1,"%)",sep=""),ylab=paste("PC2 (",pc2,"%)",sep=""),cex.lab=1.4,cex.axis=1.1)
+	title(main=LGs[i])
+}
+dev.off()
+## now scaffold 500 stands out, which is likely melanic 11 and green striped 12033, but let's see
+
+
+## pcas along scaffold 500
+pdf("TknulScaf500PCAs.pdf",width=9,height=12)
+par(mfrow=c(4,3))
+par(mar=c(4,5,2,1))
+
+a<-which(snps[,1]==500)
+
+for(i in 1:25){
+	aa<-a[((i-1)*100+1):(i*100)]
+	olg<-prcomp(g[,aa],center=TRUE,scale=FALSE)
+	pcs<-summary(olg)
+	pc1<-round(pcs$importance[2,1]*100,1)
+	pc2<-round(pcs$importance[2,2]*100,1)
+	plot(olg$x[,1],olg$x[,2],pch=sy[as.numeric(ph$Host)],col=cs[as.numeric(ph$Population)],xlab=paste("PC1 (",pc1,"%)",sep=""),ylab=paste("PC2 (",pc2,"%)",sep=""),cex.lab=1.4,cex.axis=1.1)
+	title(main=paste("Scaffold 500, window",i))
+}
+dev.off()
+## ends of chromosome show geographic pattern, but rest (most) shows clusters suggestive of major SV with freq. differences based on host
+
+## HERE ###
+
+
+## subsets by host treatment and w vs. w/o BCTURN
+
+## first for all
+C<-which(ph$Treatment.March.19=="C")
+RW<-which(ph$Treatment.March.19=="RW")
+
+phC<-ph[C,]
+phRW<-ph[RW,]
+
+gemma_phC<-matrix(NA,nrow=length(C),ncol=3)
+lmo<-lm(phC$Weight.at.Day.15 ~ phC$Stage.at.Day.15 * phC$Sex.at.Day.15)
+gemma_phC[is.na(phC$Weight.at.Day.15)==FALSE,1]<-lmo$residuals
+lmo<-lm(phC$Weight.at.day.21 ~ phC$Stage.at.Day.21 * phC$Sex.at.Day.21)
+gemma_phC[is.na(phC$Weight.at.day.21)==FALSE,2]<-lmo$residuals
+gemma_phC[,3]<-as.numeric(is.na(phC$Survival==TRUE))
+
+gemma_phRW<-matrix(NA,nrow=length(RW),ncol=3)
+lmo<-lm(phRW$Weight.at.Day.15 ~ phRW$Stage.at.Day.15 * phRW$Sex.at.Day.15)
+gemma_phRW[is.na(phRW$Weight.at.Day.15)==FALSE,1]<-lmo$residuals
+lmo<-lm(phRW$Weight.at.day.21 ~ phRW$Stage.at.Day.21 * phRW$Sex.at.Day.21)
+gemma_phRW[is.na(phRW$Weight.at.day.21)==FALSE,2]<-lmo$residuals
+gemma_phRW[,3]<-as.numeric(is.na(phRW$Survival==TRUE))
+
+## now subset
+keep<-which(phC$Population != 'BCTURN')
+gemma_phC_sub<-gemma_phC[keep,]
+keep<-which(phRW$Population != 'BCTURN')
+gemma_phRW_sub<-gemma_phRW[keep,]
+
+## write out
+write.table(round(gemma_phC,5),file="pheno_C.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(round(gemma_phC_sub,5),file="pheno_C_sub.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(round(gemma_phRW,5),file="pheno_RW.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(round(gemma_phRW_sub,5),file="pheno_RW_sub.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+
+## now subset genotype by ind. similarly
+g_C<-t(g[C,])
+g_RW<-t(g[RW,])
+keep<-which(phC$Population != 'BCTURN')
+g_C_sub<-g_C[,keep]
+keep<-which(phRW$Population != 'BCTURN')
+g_RW_sub<-g_RW[,keep]
+
+write.table(round(g_C,5),file="geno_C.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(round(g_C_sub,5),file="geno_C_sub.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(round(g_RW,5),file="geno_RW.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(round(g_RW_sub,5),file="geno_RW_sub.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+
+## weight change
+C<-which(ph$Treatment.March.19=="C")
+RW<-which(ph$Treatment.March.19=="RW")
+
+phC<-ph[C,]
+phRW<-ph[RW,]
+
+gemma_phC2<-matrix(NA,nrow=length(C),ncol=2)
+lmo<-lm(phC$Weight.at.day.21-phC$Weight.at.Day.15 ~ phC$Stage.at.Day.15 * phC$Sex.at.Day.21)
+gemma_phC2[is.na(phC$Weight.at.day.21)==FALSE,1]<-lmo$residuals
+lmo<-lm(phC$Weight.at.day.21-phC$Weight.at.Day.15 ~ phC$Sex.at.Day.21)
+gemma_phC2[is.na(phC$Weight.at.day.21)==FALSE,2]<-lmo$residuals
+
+
+gemma_phRW2<-matrix(NA,nrow=length(RW),ncol=2)
+lmo<-lm(phRW$Weight.at.day.21-phRW$Weight.at.Day.15 ~ phRW$Stage.at.Day.15 * phRW$Sex.at.Day.21)
+gemma_phRW2[is.na(phRW$Weight.at.day.21)==FALSE,1]<-lmo$residuals
+lmo<-lm(phRW$Weight.at.day.21-phRW$Weight.at.Day.15 ~ phRW$Sex.at.Day.21)
+gemma_phRW2[is.na(phRW$Weight.at.day.21)==FALSE,2]<-lmo$residuals
+
+write.table(round(gemma_phC2,5),file="pheno_C_dw.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+write.table(round(gemma_phRW2,5),file="pheno_RW_dw.txt",row.names=FALSE,col.names=FALSE,quote=FALSE)
+
+
+save(list=ls(),file="gp.rdat")
+
