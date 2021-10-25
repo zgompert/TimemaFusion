@@ -474,6 +474,7 @@ perl calpost.pl o_tknulli_C_ph*ch0.hyp.txt
 perl calpost.pl o_tknulli_C_sub_ph*ch0.hyp.txt
 ```
 
+Mostly these seem reasonable, though survival (phenotype 3) seems too high (probably not reliable).
 
 ## LD for refugio versus hwy154
 
