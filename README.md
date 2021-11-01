@@ -153,6 +153,23 @@ blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query tknulli_chroms_hic
 ## qaccver saccver pident length mismatch gapopen qstart qend sstart send evalue bitscore
 ```
 
+* Trying *T. knulli* versus *T. cristinae* green striped with `cactus` as well. I am doing this because it is not clear (at this point) whether the approach using `blastn` will work with these more divergent genomes.
+
+First, I am masking repeats with `RepateMasker` (version 4.0.7).
+
+```{bash}
+module load repeatmasker
+
+#version 4.0.7
+cd /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/repeat_mask
+
+## run repeat masker on each genome sequence, uses library from the 2020 Science paper 
+## developed by Victor
+
+RepeatMasker -s -e ncbi -xsmall -pa 24 -lib RepeatLibMergeCentroidsRM.lib /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_crist/timema_cristinae_LGs_12Jun2019_lu3Hs.fasta
+RepeatMasker -s -e ncbi -xsmall -pa 24 -lib RepeatLibMergeCentroidsRM.lib /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/tknulli_chroms_hic_output.fasta
+```
+
 ## Nanopore data set
 
 Linyi generated these data and called SVs. This data set comprises Oxford Nanopore MinION sequence data from 6 green *T. cristinae* from Refugio.
