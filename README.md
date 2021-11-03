@@ -153,6 +153,8 @@ blastn -db GreenGenome -evalue 1e-50 -perc_identity 92 -query tknulli_chroms_hic
 ## qaccver saccver pident length mismatch gapopen qstart qend sstart send evalue bitscore
 ```
 
+This did not seem to work so well. I am going to use a different approach.
+
 * Trying *T. knulli* versus *T. cristinae* green striped with `cactus` as well. I am doing this because it is not clear (at this point) whether the approach using `blastn` will work with these more divergent genomes.
 
 First, I am masking repeats with `RepateMasker` (version 4.0.7).
@@ -168,6 +170,39 @@ cd /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/repeat_mask
 
 RepeatMasker -s -e ncbi -xsmall -pa 24 -lib RepeatLibMergeCentroidsRM.lib /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_crist/timema_cristinae_LGs_12Jun2019_lu3Hs.fasta
 RepeatMasker -s -e ncbi -xsmall -pa 24 -lib RepeatLibMergeCentroidsRM.lib /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/tknulli_chroms_hic_output.fasta
+```
+
+Next, I used `cactus` (version 1.0.0) to align the (repeat masked) *T. knulli* and green striped *T. cristinae* genomes. 
+
+```{bash}
+cd /scratch/general/lustre/cactusNp
+
+module load cactus
+
+cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_TcrGS_Tknul.txt cactusTcrGS_Tknul.hal  --maxCores 80 
+```
+
+Then, I used several HAL (Hierarchical Alignment) tools to summaize the alignments and extract synteny blocks. See [HAL](https://github.com/ComparativeGenomicsToolkit/hal) for a general description of these tools and [Krasheninnikova et al. 2020](https://academic.oup.com/gigascience/article/9/6/giaa047/5848161) for details about the `HalSynteny` algorithm. 
+
+```{bash}
+#!/bin/sh
+## commands run thus far to summarize the hal alignment
+module load cactus
+## see https://github.com/ComparativeGenomicsToolkit/hal
+
+~/source/hal/bin/halValidate cactusTcrGS_Tknul.hal
+#File valid
+
+~/source/hal/bin/halStats cactusTcrGS_Tknul.hal
+#hal v2.1
+#(t_cris_gs:0.01,t_knulli:0.01)Anc0;
+
+#GenomeName, NumChildren, Length, NumSequences, NumTopSegments, NumBottomSegments
+#Anc0, 2, 683142857, 42183, 0, 23649957
+#t_cris_gs, 0, 1119939319, 13, 32708297, 0
+#t_knulli, 0, 1145508109, 12, 36481639, 0
+
+~/source/hal/bin/halSynteny --queryGenome t_knulli --targetGenome t_cris_gs cactusTcrGS_Tknul.hal out_synteny_knulli.psl
 ```
 
 ## Nanopore data set
