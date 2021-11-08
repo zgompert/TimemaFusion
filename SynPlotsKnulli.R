@@ -69,3 +69,41 @@ for(i in 2:N){
 abline(v=c(lb,ub),col="red",lwd=1.5)
 dev.off()	
 
+## colinearity plots for all homologous chromsomes
+chtab<-matrix(c(8483,29,
+        14640,813,
+        42935,29,
+        42912,6886,
+        18722,6895,
+        9928,6839,
+        10660,934,
+        7748,6852,
+        16151,1305,
+        14160,30,
+        12033,500,
+        12380,6840,
+        14101,775),nrow=13,ncol=2,byrow=TRUE)
+
+pdf("AlnPlotsKnulTcr.pdf",width=10,height=10)
+par(mfrow=c(2,2))
+par(mar=c(4.5,5.5,2.5,1.5))
+for(i in 1:13){
+        tcr<-grep(x=dfdat[,14],pattern=chtab[i,1])
+        tkn<-grep(x=dfdat[,10],pattern=chtab[i,2])
+        cc<-tcr[tcr %in% tkn]
+        subd<-dfdat[cc,]
+        xub<-max(subd[,13]);yub<-max(subd[,17])
+        
+        plot(as.numeric(subd[1,12:13]),as.numeric(subd[1,16:17]),type='l',xlim=c(0,xub),ylim=c(0,yub),cex.lab=1.4,xlab="T. knulli",ylab="T. cristinae")
+        title(main=paste("Chrom.",i),cex.main=1.4)
+        N<-dim(subd)[1]
+        for(i in 2:N){
+                if(subd[i,9]=="++"){
+                        lines(subd[i,12:13],subd[i,16:17])
+                }
+                else{
+                        lines(subd[i,12:13],subd[i,16:17],col="cadetblue")
+                }
+        }
+}
+dev.off()
