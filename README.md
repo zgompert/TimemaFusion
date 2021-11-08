@@ -205,7 +205,26 @@ module load cactus
 ~/source/hal/bin/halSynteny --queryGenome t_knulli --targetGenome t_cris_gs cactusTcrGS_Tknul.hal out_synteny_knulli.psl
 ```
 
-This generates a syntency file in psl format, for a description see [PSL](https://genome.ucsc.edu/FAQ/FAQformat.html#format2). The key columns am using are 1 = matches (number of matching bases), 10 = query name and 14 = target name. 
+This generates a syntency file in psl format, for a description see [PSL](https://genome.ucsc.edu/FAQ/FAQformat.html#format2). The key columns am using are 1 = matches (number of matching bases), 10 = query name and 14 = target name. I summarized the matches between scaffolds/chromosomes to identify homologous chromosomes between *T. cristinae* and *T. knulli*. The results were unambiguous, see the table below and [SynPlotsKnulli.R](SynPlotsKnulli.R). Note, 1 and 3 were fused in *T. knulli* (both = scaffold 29).  [SynTcrTknul.pdf](https://github.com/zgompert/TimemaFusion/files/7500038/SynTcrTknul.pdf)
+
+|T. christinae chrom. | Green Stripe scaf. | T. knulli scaf. |
+|-----------:|--------------------:|-----------------------:|
+| 1 | 8483 | 29 |
+| 2 | 14640 | 813 |
+| 3 | 42935 | 29 |
+| 4 | 42912 | 6886 |
+| 5 | 18722 | 6895 |
+| 6 | 9928 | 6839 |
+| 7 | 10660 | 934 |
+| 8 | 7748 | 6852 |
+| 9 | 16151 | 1305 |
+| 10 | 14160 | 30 |
+| 11 | 12033 | 500 |
+| 12 | 12380 | 6840 |
+| 13 | 14101 | 775 |
+
+Next, I looked at patterns of colinearity for each pair of homolgous chromosomes (including 11). Structural variation between *T. cristinae* and *T. knulli* is ubiquitous [AlnPlotsKnulTcr.pdf](https://github.com/zgompert/TimemaFusion/files/7500041/AlnPlotsKnulTcr.pdf), and there is SV on chromosome 11 that lines up roughly with PCA signal of SV within *T. knulli* [AlignTcr11Tknul500.pdf](https://github.com/zgompert/TimemaFusion/files/7500043/AlignTcr11Tknul500.pdf). But we don't know how much of this SV (between *T. cristinae* and *T. knulli*) is segregating within *T. knulli*. I am also unsure how exactly to interpret the stand of alignments (++ versus +-; evidence for inversions versus different strands sequenced for different contigs that went into scaffolding).
+
 
 
 ## Nanopore data set
