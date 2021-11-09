@@ -621,7 +621,6 @@ summary(lm(gemma_phRW_sub[,1] ~ gen))
 The patterns of genetic variation on chromosome 11 (scaffold 500) in *T. knulli* indicate a large region of reduced recombination, which is most likely some form of structural variant. I looked at patterns of coverage (for SNPs) and LD along that chromosome and by SV genotype (i.e., PC1 cluster) within *T. knulli* with hopes of shedding light on the nature of the SV. There were some weak signals associated with coverage (maybe a indel is involved near one edge) with more compelling patterns in terms of LD (see [LDdifplot.pdf](https://github.com/zgompert/TimemaFusion/files/7507542/LDdifplot.pdf)
 [LDplot.pdf](https://github.com/zgompert/TimemaFusion/files/7507543/LDplot.pdf)). In brief, LD is elevated in the C allele relative to the RW allele across the SV region, and especially at the boundaries. This is consistent with selection favoring the C allele or with less recombinatino within C than within RW, but still doesn't demonstrate conclusively the nature of the SV. See [knulliDepthLD.R](knulliDepthLD.R).
 
-). 
 
 ## LD for refugio versus hwy154
 
