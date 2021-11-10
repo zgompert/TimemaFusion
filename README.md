@@ -225,7 +225,16 @@ This generates a syntency file in psl format, for a description see [PSL](https:
 
 Next, I looked at patterns of colinearity for each pair of homolgous chromosomes (including 11). Structural variation between *T. cristinae* and *T. knulli* is ubiquitous [AlnPlotsKnulTcr.pdf](https://github.com/zgompert/TimemaFusion/files/7500041/AlnPlotsKnulTcr.pdf), and there is SV on chromosome 11 that lines up roughly with PCA signal of SV within *T. knulli* [AlignTcr11Tknul500.pdf](https://github.com/zgompert/TimemaFusion/files/7500043/AlignTcr11Tknul500.pdf). But we don't know how much of this SV (between *T. cristinae* and *T. knulli*) is segregating within *T. knulli*. I am also unsure how exactly to interpret the stand of alignments (++ versus +-; evidence for inversions versus different strands sequenced for different contigs that went into scaffolding).
 
+I am trying an additional alignment with `mummer` (version 4.0.0rc1) to make sure I understand what the "strand" means. The program is described [here](https://github.com/mummer4/mummer). For this, I extracted just chromosome 11 from *T. knulli* (scaffold 500, no repeat masking) with `samtools` (version 1.12), and then ran the `nucmer` command from `mummer`.
 
+```{bash}
+samtools faidx ../t_knulli/tknulli_chroms_hic_output.fasta -o tknulli_chroms_hic_chrom11.fasta -r regionsq
+
+## just chrom 11 from knulli against all lg chroms of cristinae
+~/source/mummer-4.0.0rc1/nucmer -t 48 -p mumaln_tknulli_tcr tknulli_chroms_hic_chrom11.fasta /uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist/timema_cristinae_LGs_12Jun2019_lu3Hs.fasta.masked
+
+~/source/mummer-4.0.0rc1/show-coords mumaln_tknulli_tcr.delta mumaln_tknulli_tcr.coords
+```
 
 ## Nanopore data set
 
