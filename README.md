@@ -305,6 +305,17 @@ I have split the data by population and host with [splitPops.pl](splitPops.pl).
 
 Here are the sample sizes, sites and hosts for the populations I will use:
 
+| Species |Pop. 1 | Pop. 2 | N1 | N2 | No. SNPs |
+|--------:|------:|-------:|---:|---:|---------:|
+| *T. californicum* | SM on M | SM on Q| 17 | 20 | 7858|
+| *T. knulli* | BCE on RW | BCWP on C| 15 | 12 | 1139|
+| *T. knulli* | BCTUR on C | BCTUR on P| 17 | 16 | 1139|
+| *T. landelsensis* | BCBOG on C | BCBOG on Q| 23 | 20 | 8548|
+| *T. landelsensis* | BCSUM on C | BCSUM on Q| 20 | 11 | 8548|
+| *T. poppensis* | TBARN on DF | TBARN on RW| 20 | 20 | 7157|
+
+I calculated Fst for each SNP and summarized Fst at the linkage group level (for the old *T. cristinae* LGs from the melanic genome). See [hostFst.R](hostFst.R). The signal for *T. knulli* RW vs C is clear (elevated Fst on LG 11). Nothing else really stands out, except a weaker signal on LG 8 likely associated with color in *T. californicum*.
+
 ## Alignment, variant calling and filtering for GBS data
 
 * **rw_plus** data set; includes *T. knulli* and *T. petita*.
