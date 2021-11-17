@@ -297,6 +297,13 @@ done
 
 * **NOTE** Might want to try *de novo* assembly of nanopore reads instead, see [canu](https://github.com/marbl/canu). Also, evidence from TRA transition calls doesn't really support merger of LG 8 and 11 (7748 and 12033), or of 42912 and 42934, which show highest interchromosomal LD in Refugio. TRA call might not be that useful. Instead use these data for *de novo* assembly and maybe for identifying other SVs (inversions and deletions) relative to Hwy154 (nice because both based on green genome).
 
+## Host-associated genetic differentiation for 2017 Nature EE populations
+
+To motivate the analysis of RW adaptation in *T. knulli*, I want to quantify host-plant associated differentiation across other northern clade *Timema* species. For this, I am using the GBS data from [Chaturvedi et al. 2021-preprint](https://www.researchsquare.com/article/rs-923547/v1), which were re-analyzed by Sam for the climate-adaptation paper [Riesch et al. 2017](https://www.nature.com/articles/s41559-017-0082). I will get processing details from that paper. I am starting from her genotype likelihood files. These, along with a file with IDs are in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/host_diff`. This includes data for *T. californicum*, *T. knulli*, *T. landelsensis* and *T. poppensis*. 
+
+I have split the data by population and host with [splitPops.pl](splitPops.pl).
+
+Here are the sample sizes, sites and hosts for the populations I will use:
 
 ## Alignment, variant calling and filtering for GBS data
 
