@@ -665,6 +665,14 @@ See `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/Tknul
 
 Estimating gene flow for BCE C, BCE RW and BCTURN (allopatric on C) using a Bayesian F-model, [beta_ismod.stan](beta_ismod.stan) and [MigStan.R](MigStan.R). Simulations showing directional selection gene flow balance [sim_sm_balance.R](sim_sm_balance.R). My plan is to develop an ABC model that takes advantage of Nm for alloptaric vs sympatric C x RW.
 
+## LD based Ne estiamtes to parameteriz ABC model
+
+Method to estimate delta follows [Weir 1979](https://www.jstor.org/stable/2529947?seq=1#metadata_info_tab_contents) and [Zaykin 2004](https://onlinelibrary.wiley.com/doi/epdf/10.1002/gepi.20015). From there, I wrote my own R script for LD-based estimationg of Ne following [Waples and Do 2008](https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1755-0998.2007.02061.x). A distinct angle of my approach was to subsample independent pairs of SNP loci on different chromosomes. 
+
+## ABC model of D/B selection gene flow balance
+
+Need to add code from CVS.
+
 ## Trying to determine the nature of the SV locus in *T. knulli*
 
 The patterns of genetic variation on chromosome 11 (scaffold 500) in *T. knulli* indicate a large region of reduced recombination, which is most likely some form of structural variant. I looked at patterns of coverage (for SNPs) and LD along that chromosome and by SV genotype (i.e., PC1 cluster) within *T. knulli* with hopes of shedding light on the nature of the SV. There were some weak signals associated with coverage (maybe a indel is involved near one edge) with more compelling patterns in terms of LD (see [LDdifplot.pdf](https://github.com/zgompert/TimemaFusion/files/7507542/LDdifplot.pdf)
