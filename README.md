@@ -223,7 +223,7 @@ This generates a syntency file in psl format, for a description see [PSL](https:
 | 12 | 12380 | 6840 |
 | 13 | 14101 | 775 |
 
-Next, I looked at patterns of colinearity for each pair of homolgous chromosomes (including 11). Structural variation between *T. cristinae* and *T. knulli* is ubiquitous [AlnPlotsKnulTcr.pdf](https://github.com/zgompert/TimemaFusion/files/7500041/AlnPlotsKnulTcr.pdf), and there is SV on chromosome 11 that lines up roughly with PCA signal of SV within *T. knulli* [AlignTcr11Tknul500.pdf](https://github.com/zgompert/TimemaFusion/files/7500043/AlignTcr11Tknul500.pdf). But we don't know how much of this SV (between *T. cristinae* and *T. knulli*) is segregating within *T. knulli*. I am also unsure how exactly to interpret the stand of alignments (++ versus +-; evidence for inversions versus different strands sequenced for different contigs that went into scaffolding).
+Next, I looked at patterns of colinearity for each pair of homolgous chromosomes (including 11). Structural variation between *T. cristinae* and *T. knulli*, see [SynPlotsKnulli.R](SynPlotsKnulli.R). Note that for this +- alignments are flipped. Structural variants are quite common and an inversion on Chromosome 11 ligns up with the PCA SV signal [AlnPlotsKnulTcr.pdf](https://github.com/zgompert/TimemaFusion/files/7671914/AlnPlotsKnulTcr.pdf).
 
 I am trying an additional alignment with `mummer` (version 4.0.0rc1) to make sure I understand what the "strand" means. The program is described [here](https://github.com/mummer4/mummer). For this, I extracted just chromosome 11 from *T. knulli* (scaffold 500, no repeat masking) with `samtools` (version 1.12), and then ran the `nucmer` command from `mummer`.
 
@@ -247,7 +247,8 @@ cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes
 ## find synteny blocks
 ~/source/hal/bin/halSynteny --queryGenome t_chumash --targetGenome t_knulli cactusTknul_Tchum.hal out_synteny_KnulChum.psl
 ```
-Summarized synteny blocks with XX. *T. chumash* has 10 chromsomes (this individual at least, I think Tanja's work suggest 11-13), with chromosome 1 representing four fused *T. cristinae* chrosomosomes (including 1 and 3 which were fused in *T. knulli*).
+Summarized synteny blocks with [SynPlotsChumKnul.R](SynPlotsChumKnul.R). *T. chumash* has 10 chromsomes (this individual at least, I think Tanja's work suggest 11-13), with chromosome 1 representing four fused *T. cristinae* chrosomosomes (including 1 and 3 which were fused in *T. knulli*). Similar to the comparison with *T. cristinae*, structural variants are quite common and an inversion on Chromosome 11 ligns up with the PCA SV signal [AlnPlotsChumKnul.pdf](https://github.com/zgompert/TimemaFusion/files/7671919/AlnPlotsChumKnul.pdf).
+
 
 |T. christinae chrom. | Green Stripe scaf. | T. knulli scaf. | T. chumash scaf. |
 |-----------:|--------------------:|-----------------------:|-----------------------:|
@@ -697,6 +698,8 @@ The patterns of genetic variation on chromosome 11 (scaffold 500) in *T. knulli*
 [LDplot.pdf](https://github.com/zgompert/TimemaFusion/files/7507543/LDplot.pdf)). In brief, LD is elevated in the C allele relative to the RW allele across the SV region, and especially at the boundaries. This is consistent with selection favoring the C allele or with less recombinatino within C than within RW, but still doesn't demonstrate conclusively the nature of the SV. See [knulliDepthLD.R](knulliDepthLD.R).
 
 I used the eigenvalues from a PCA in 100 SNP windows along chromosome 11 (scaffold 500) as an alternative approach to determine the SV boundaries (but not types). The eigenvalues increase when you hit the SV as the first PC explains more of the total variation (this excludes BCTURN to avoid confounding from actual structure). I then fit a HMM to precisely define the boundaries. This with done in `R` with `HiddenMarkov` version (1.8.13). See [defineBounds.R](defineBounds.R) for details. The HMM identified a single, continuous elevated eigenvalue region from 13,093,370 43,606,674. I will use this as the SV bounds for now at least.
+
+With the latest alignments between *T. knulli* and (i) *T. cristiane* or *T. chumash*, I think we can be confident that this is an inversion. At minimum, the individual we sequenced is inversted relative to these species with the inversion corresponding precisely to the PCA SV signal. I still need to figure out whether the inverted allele is the RW or C allele and try to date the inversion.
 
 
 ## LD for refugio versus hwy154
