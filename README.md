@@ -667,7 +667,7 @@ Estimating gene flow for BCE C, BCE RW and BCTURN (allopatric on C) using a Baye
 
 ## LD based Ne estiamtes to parameteriz ABC model
 
-Method to estimate delta follows [Weir 1979](https://www.jstor.org/stable/2529947?seq=1#metadata_info_tab_contents) and [Zaykin 2004](https://onlinelibrary.wiley.com/doi/epdf/10.1002/gepi.20015). From there, I wrote my own R script for LD-based estimationg of Ne following [Waples and Do 2008](https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1755-0998.2007.02061.x). A distinct angle of my approach was to subsample independent pairs of SNP loci on different chromosomes. 
+Method to estimate delta follows [Weir 1979](https://www.jstor.org/stable/2529947?seq=1#metadata_info_tab_contents) and [Zaykin 2004](https://onlinelibrary.wiley.com/doi/epdf/10.1002/gepi.20015). From there, I wrote my own R script for LD-based estimationg of Ne following [Waples and Do 2008](https://onlinelibrary.wiley.com/doi/epdf/10.1111/j.1755-0998.2007.02061.x). A distinct angle of my approach was to subsample independent pairs of SNP loci on different chromosomes. The main functions for the LD-based inference of Ne are in [ldNe.R](ldNe.R) and the analysis is and results are in [knulliEstLdNe.R](knulliEstLdNe.R). Posterior means for Ne (not 2Ne) were 23.2 for BCTURN C, 125.0 for BCE RW and 75.7 for BCE C.
 
 ## ABC model of D/B selection gene flow balance
 
