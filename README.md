@@ -247,6 +247,24 @@ cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes
 ## find synteny blocks
 ~/source/hal/bin/halSynteny --queryGenome t_chumash --targetGenome t_knulli cactusTknul_Tchum.hal out_synteny_KnulChum.psl
 ```
+Summarized synteny blocks with XX. *T. chumash* has 10 chromsomes (this individual at least, I think Tanja's work suggest 11-13), with chromosome 1 representing four fused *T. cristinae* chrosomosomes (including 1 and 3 which were fused in *T. knulli*).
+
+|T. christinae chrom. | Green Stripe scaf. | T. knulli scaf. | T. chumash scaf. |
+|-----------:|--------------------:|-----------------------:|-----------------------:|
+| 1 | 8483 | 29 | 43 |
+| 2 | 14640 | 813 | 1392 |
+| 3 | 42935 | 29 | 43 |
+| 4 | 42912 | 6886 | 43 |
+| 5 | 18722 | 6895 | 56 |
+| 6 | 9928 | 6839 | 1469 |
+| 7 | 10660 | 934 | 1510 |
+| 8 | 7748 | 6852 | 113 |
+| 9 | 16151 | 1305 | 43 | 
+| 10 | 14160 | 30 | 1213 |
+| 11 | 12033 | 500 | 48 |
+| 12 | 12380 | 6840 | 1403 |
+| 13 | 14101 | 775 | 1308 |
+
 
 ## Sex chromosome
 
