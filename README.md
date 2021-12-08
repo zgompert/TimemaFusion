@@ -690,7 +690,7 @@ Method to estimate delta follows [Weir 1979](https://www.jstor.org/stable/252994
 
 ## ABC model of D/B selection gene flow balance
 
-Need to add code from CVS.
+Simulations for fitting a gene flow-selection model were run the a program written in C++. See [main.C](main.C), [func.C](func.C) and [kbsel.H](kbsel.H).
 
 ## Trying to determine the nature of the SV locus in *T. knulli*
 
