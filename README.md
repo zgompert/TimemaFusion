@@ -692,6 +692,34 @@ Method to estimate delta follows [Weir 1979](https://www.jstor.org/stable/252994
 
 Simulations for fitting a gene flow-selection model were run the a program written in C++. See [main.C](main.C), [func.C](func.C) and [kbsel.H](kbsel.H).
 
+Ran simulations with 3 sets of priors, based either on the contemporary estimates of Ne from LD, or wider priors that I think better reflect our actual undertainty. 25,000,000 simulations of each.
+
+```{perl}
+#!/usr/bin/perl
+#
+# fork run of ABC modelx 
+#
+
+
+use Parallel::ForkManager;
+my $max = 50;
+my $pm = Parallel::ForkManager->new($max);
+
+foreach $k (0..99){
+        sleep(2);
+        $pm->start and next; ## fork
+        system "~/bin/kbsel -a 50 -b 50 -c 50 -A 1000 -B 1000 -C 1000 -n 250000 -o out_wide_$k".".txt\n";
+        system "~/bin/kbsel -a 100 -b 100 -c 100 -A 2000 -B 2000 -C 2000 -n 250000 -o out_hi_$k".".txt\n";
+        system "~/bin/kbsel -a 22 -b 96 -c 72 -A 24 -B 137 -C 79 -n 250000 -o out_est_$k".".txt\n";
+        $pm->finish;
+}
+
+$pm->wait_all_children;
+```
+
+I then used the `abc` (2.1) package in `R` (version 4.0.2) to summarize posteriors. I used simple rejection for model choice. The model with balancing selection on both hosts was best under all priors. Model-averaging doesn't make sense across models here (different parameters), so I inferred selection based on the balancing selection model. I used the log transformation of the selection coefficients and ridge regression for parameter adjustment. See [SummarizeABC.R](SummarizeABC.R).
+
+
 ## Trying to determine the nature of the SV locus in *T. knulli*
 
 The patterns of genetic variation on chromosome 11 (scaffold 500) in *T. knulli* indicate a large region of reduced recombination, which is most likely some form of structural variant. I looked at patterns of coverage (for SNPs) and LD along that chromosome and by SV genotype (i.e., PC1 cluster) within *T. knulli* with hopes of shedding light on the nature of the SV. There were some weak signals associated with coverage (maybe a indel is involved near one edge) with more compelling patterns in terms of LD (see [LDdifplot.pdf](https://github.com/zgompert/TimemaFusion/files/7507542/LDdifplot.pdf)
