@@ -267,6 +267,15 @@ Summarized synteny blocks with [SynPlotsChumKnul.R](SynPlotsChumKnul.R). *T. chu
 | 13 | 14101 | 775 | 1308 |
 
 
+Finally, mostly for completeness, I am using `cactus` (version 1.0.0) to align our Hi-C *T. chumash* genome to the green striped *T. cristinae* genome. I am using a previously masked (with RepateMasker) version of the *T. chumash* genome, which now just has the 10 scaffolds corresponding to chromsomes.
+
+```{bash}
+
+module load cactus
+
+cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_TcrGS_Tchum.txt cactusTcrGS_Tchum.hal  --maxCores 80 
+```
+
 ## Sex chromosome
 
 I used depth of coverage for *T. knulli* to identify the X sex chromosome (2 copies in females 1 in males). Presumably this is the same for *T. cristinae* but will check at some point. The depth data (from the redwood feeding experiment) is in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/genotypes_rw` (see `depthKnulli.txt`). The analysis is in [findSexChrom.R](findSexChrom.R). The X is chromosome 13 (as defined above), which mostly comprises parts of the genome that were not assigned to a linkage group (NA) in the old (pre Hi-C) melanic *T. cristinae* genome. See the sex-coverage plot.[SexChrom.pdf](https://github.com/zgompert/TimemaFusion/files/7541054/SexChrom.pdf)
