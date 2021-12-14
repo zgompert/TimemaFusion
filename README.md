@@ -273,7 +273,11 @@ Finally, mostly for completeness, I am using `cactus` (version 1.0.0) to align o
 
 module load cactus
 
+## whole genome alignment
 cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_TcrGS_Tchum.txt cactusTcrGS_Tchum.hal  --maxCores 80 
+
+## extract syneny blocks
+~/source/hal/bin/halSynteny --queryGenome t_chum --targetGenome t_cris_gs cactusTcrGS_Tchum.hal out_synteny_CrisChum.psl
 ```
 
 ## Sex chromosome
