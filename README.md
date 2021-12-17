@@ -381,6 +381,18 @@ samtools mpileup -b bams_petita -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home/
 bcftools call -v -c -p 0.01 -O v -o tcr_rw_petita_variants.vcf tcr_rw_petita_variants.bcf
 ```
 
+For *T. knulli* and *T. petita* combined (this is to have a common set of variants for a phylogenetic analysis to date the perform SV locus)
+
+```{bash}
+module load samtools/1.5
+module load bcftools
+## samtools 1.5
+## bcftools 1.6
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_rw_plus
+samtools mpileup -b bams_comb -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta -q 20 -Q 30 -I -g -u -t DP,AD,ADF,ADR -o tcr_rw_comb_variants.bcf
+bcftools call -v -c -p 0.01 -O v -o tcr_rw_comb_variants.vcf tcr_rw_comb_variants.bcf
+```
+
 * Variant filtering with `vcfFilterKnullipl`, `vcfFilterPetita.pl` and `filterSomeMore.pl`.
 
 I filtered based on the same criteria for both species/data sets: 2X minimum coverage per individual, a minimum of 10 reads supporting the alternative allele, Mann-Whittney P values for BQ, MQ and read position rank-sum tests > 0.005, a minimum ratio of variant confidence to non-reference read depth of 2, a minimum mapping quality of 30, no more than 20% of individuals with missing data, only bi-allelic SNPs, and coverage not > 3 SDs of the mean coverage (at the SNP level).
@@ -741,6 +753,10 @@ The patterns of genetic variation on chromosome 11 (scaffold 500) in *T. knulli*
 I used the eigenvalues from a PCA in 100 SNP windows along chromosome 11 (scaffold 500) as an alternative approach to determine the SV boundaries (but not types). The eigenvalues increase when you hit the SV as the first PC explains more of the total variation (this excludes BCTURN to avoid confounding from actual structure). I then fit a HMM to precisely define the boundaries. This with done in `R` with `HiddenMarkov` version (1.8.13). See [defineBounds.R](defineBounds.R) for details. The HMM identified a single, continuous elevated eigenvalue region from 13,093,370 43,606,674. I will use this as the SV bounds for now at least.
 
 With the latest alignments between *T. knulli* and (i) *T. cristiane* or *T. chumash*, I think we can be confident that this is an inversion. At minimum, the individual we sequenced is inversted relative to these species with the inversion corresponding precisely to the PCA SV signal. I still need to figure out whether the inverted allele is the RW or C allele and try to date the inversion.
+
+## Divergence time dating for the SV locus alleles
+
+My plan is to determine the divergence time for the two SV alleles (C vs. RW) for the perform locus. This can be done in a phylogeneitc context. We have a tree from Victor, described in [Riesch_et_al-2017](https://github.com/zgompert/TimemaFusion/files/7738281/Riesch_et_al-2017-Nature_Ecology_.26_Evolution.pdf). Doro used this tree for divergence time data of the *Mel-Stripe* [Lindtke et al. 2017](https://onlinelibrary.wiley.com/doi/full/10.1111/mec.14280). The key is to use the callibrations from Victor's tree to callibrate a tree with *T. knullia* SV alleles and *T. petita*. See the DRYAD code from [Doro](https://datadryad.org/stash/dataset/doi:10.5061/dryad.jt644) and [Victor](https://datadryad.org/stash/dataset/doi:10.5061/dryad.nq67q), along withe Doro's [supplemental material](https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fmec.14280&file=mec14280-sup-0001-Supinfo.pdf).
 
 
 ## LD for refugio versus hwy154
