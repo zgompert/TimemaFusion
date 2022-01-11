@@ -282,7 +282,8 @@ cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes
 
 Summarized synteny blocks with [SynPlotsChumTcr.R](SynPlotsChumTcr.R). The synteny analysis is consistent with expectations from the alignments of both *T. chumash* and *T. cristinae* with *T. knulli* as summarized in the tables above. As expected, there is no evidence of a large inversion on chromosome 11 between *T. chumash* and *T. cristinae*, which further bolsters the evidence that we have an inversion in *T. knulli* relative to both of these species. See [AlnPlotsChumCris.pdf](https://github.com/zgompert/TimemaFusion/files/7804471/AlnPlotsChumCris.pdf).
 
-Finally, finally (maybe), we now have a *T. podura* genome, so I am throwing that in the mix too. Here again, I first maksed repeats with `RepeatMasker` (version 4.0.7) and then performed the alignment (first to *T. knulli*) with `cactus` (version 1.0.0). I have a copy of the genome here: /uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_podura/.
+Finally, finally (maybe), we now have a [*T. podura* genome](https://github.com/zgompert/TimemaFusion/files/7843373/cen2309_report.pdf)
+, so I am throwing that in the mix too. Here again, I first maksed repeats with `RepeatMasker` (version 4.0.7) and then performed the alignment (first to *T. knulli*) with `cactus` (version 1.0.0). I have a copy of the genome here: /uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_podura/.
 
 ```{bash}
 #!/bin/sh
