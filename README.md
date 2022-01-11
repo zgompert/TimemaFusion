@@ -300,8 +300,10 @@ cd /scratch/general/lustre/cactusNp
 module load cactus
 
 cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_Tknul_Tpod.txt cactusTknul_Tpod.hal --maxCores 80 
-```
 
+## extract synteny blocks
+~/source/hal/bin/halSynteny --queryGenome t_podura --targetGenome t_knulli cactusTknul_Tpod.hal out_synteny_KnulPod.psl
+```
 
 ## Sex chromosome
 
