@@ -306,6 +306,17 @@ cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes
 ```
 I summarized the alignments with [SynPlotsPodKnul.R](SynPlotsPodKnul.R). As with the other alignments, most chromosomes in *T. knulli* (12 chrom.) clearly correspond with single chromosomes (scaffolds) in *T. podura* (14 chrom.), see [SynTknulTpod.pdf](https://github.com/zgompert/TimemaFusion/files/7866393/SynTknulTpod.pdf). But there were a few exceptions and the dotplot alignments were the messiest I have seen yet, see [AlnPlotsPodKnul.pdf](https://github.com/zgompert/TimemaFusion/files/7866395/AlnPlotsPodKnul.pdf). I want to align *T. podura* to *T. cristina* and *T. chumash* to make more sense of this.
 
+Here are the genome alignment analyses for *T. podura* versus *T. cristinae* (green striped) and *T. chumash*.
+
+```{bash}
+#!/bin/sh
+cd /scratch/general/lustre/cactusNp
+
+module load cactus
+
+cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_TcrsGS_Tpod.txt cactusTcrsGS_Tpod.hal --maxCores 80
+```
+
 ## Sex chromosome
 
 I used depth of coverage for *T. knulli* to identify the X sex chromosome (2 copies in females 1 in males). Presumably this is the same for *T. cristinae* but will check at some point. The depth data (from the redwood feeding experiment) is in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/genotypes_rw` (see `depthKnulli.txt`). The analysis is in [findSexChrom.R](findSexChrom.R). The X is chromosome 13 (as defined above), which mostly comprises parts of the genome that were not assigned to a linkage group (NA) in the old (pre Hi-C) melanic *T. cristinae* genome. See the sex-coverage plot.[SexChrom.pdf](https://github.com/zgompert/TimemaFusion/files/7541054/SexChrom.pdf)
