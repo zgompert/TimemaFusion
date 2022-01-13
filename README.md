@@ -304,6 +304,7 @@ cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes
 ## extract synteny blocks
 ~/source/hal/bin/halSynteny --queryGenome t_podura --targetGenome t_knulli cactusTknul_Tpod.hal out_synteny_KnulPod.psl
 ```
+I summarized the alignments with [SynPlotsPodKnul.R](SynPlotsPodKnul.R). As with the other alignments, most chromosomes in *T. knulli* (12 chrom.) clearly correspond with single chromosomes (scaffolds) in *T. podura* (14 chrom.), see [SynTknulTpod.pdf](https://github.com/zgompert/TimemaFusion/files/7866393/SynTknulTpod.pdf). But there were a few exceptions and the dotplot alignments were the messiest I have seen yet, see [AlnPlotsPodKnul.pdf](https://github.com/zgompert/TimemaFusion/files/7866395/AlnPlotsPodKnul.pdf). I want to align *T. podura* to *T. cristina* and *T. chumash* to make more sense of this.
 
 ## Sex chromosome
 
