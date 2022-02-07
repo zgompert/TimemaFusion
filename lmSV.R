@@ -14,13 +14,46 @@ gen<-ko$cluster ## these are sorted
 summary(lm(gemma_phRW_sub[,1] ~ gen))
 
 #             Estimate Std. Error t value Pr(>|t|)  
-#(Intercept)  0.019278   0.008424   2.289   0.0273 *
-#gen         -0.008555   0.003821  -2.239   0.0306 *
-#---
-#Residual standard error: 0.01902 on 41 degrees of freedom
+#(Intercept)  0.018729   0.008554   2.190   0.0343 *
+#gen         -0.008547   0.003880  -2.203   0.0333 *
+#Residual standard error: 0.01932 on 41 degrees of freedom
 #  (6 observations deleted due to missingness)
-#Multiple R-squared:  0.109,	Adjusted R-squared:  0.08722 
-#F-statistic: 5.013 on 1 and 41 DF,  p-value: 0.03064
+#Multiple R-squared:  0.1058,	Adjusted R-squared:  0.08402 
+#F-statistic: 4.853 on 1 and 41 DF,  p-value: 0.03328
+
+summary(lm(gemma_phRW_sub[,2] ~ gen))
+
+#            Estimate Std. Error t value Pr(>|t|)
+#(Intercept)  0.008068   0.011748   0.687    0.496
+#gen         -0.004356   0.005329  -0.818    0.418
+#Residual standard error: 0.02653 on 41 degrees of freedom
+#  (6 observations deleted due to missingness)
+#Multiple R-squared:  0.01604,	Adjusted R-squared:  -0.007959 
+#F-statistic: 0.6683 on 1 and 41 DF,  p-value: 0.4184
+
+summary(lm(gemma_phRW_sub[,3] ~ gen))
+#            Estimate Std. Error t value Pr(>|t|)    
+#(Intercept)  0.93683    0.13360   7.012 7.83e-09 ***
+#gen         -0.01849    0.05999  -0.308    0.759    
+#Residual standard error: 0.3088 on 47 degrees of freedom
+#Multiple R-squared:  0.002017,	Adjusted R-squared:  -0.01922 
+#F-statistic: 0.09499 on 1 and 47 DF,  p-value: 0.7593
+summary(glm(gemma_phRW_sub[,3] ~ gen,family="binomial"))
+#            Estimate Std. Error z value Pr(>|z|)  
+#(Intercept)   2.6137     1.5036   1.738   0.0821 .
+#gen          -0.2046     0.6520  -0.314   0.7537  
+
+#    Null deviance: 32.295  on 48  degrees of freedom
+#Residual deviance: 32.196  on 47  degrees of freedom
+#AIC: 36.196
+#Number of Fisher Scoring iterations: 5
+
+sexRW_sub<-sexRW[which(phRW$Population != 'BCTURN')]
+tapply(X=gemma_phRW_sub[,3],INDEX=list(gen,sexRW_sub),mean)
+#     female  male
+#1 1.0000000 1.000
+#2 0.7857143 0.875
+#3 0.9166667 1.000
 
 ## pca C without BCTURN
 pc<-prcomp(t(g_C_sub[a,]),center=TRUE,scale=FALSE)
@@ -29,26 +62,22 @@ gen<-ko$cluster ## these are sorted ... ran till they were
 
 ## lm fits, C 15 and 21 d weight and survival all significant
 summary(lm(gemma_phC_sub[,1] ~ gen))
-#            Estimate Std. Error t value Pr(>|t|)   
-#(Intercept)  0.04160    0.01269   3.279  0.00194 **
-#gen         -0.01845    0.00572  -3.226  0.00226 **
-#---
-#Residual standard error: 0.03116 on 48 degrees of freedom
+#             Estimate Std. Error t value Pr(>|t|)   
+#(Intercept)  0.041435   0.014971   2.768  0.00800 **
+#gen         -0.018215   0.006749  -2.699  0.00958 **
+#Residual standard error: 0.03677 on 48 degrees of freedom
 #  (2 observations deleted due to missingness)
-#Multiple R-squared:  0.1782,	Adjusted R-squared:  0.1611 
-#F-statistic: 10.41 on 1 and 48 DF,  p-value: 0.002261
+#Multiple R-squared:  0.1317,	Adjusted R-squared:  0.1137 
+#F-statistic: 7.284 on 1 and 48 DF,  p-value: 0.009578
 
 summary(lm(gemma_phC_sub[,2] ~ gen))
-#             Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)  0.047148   0.012501   3.772 0.000471 ***
-#gen         -0.020302   0.005498  -3.693 0.000598 ***
-#---
-#Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-
-#Residual standard error: 0.02801 on 45 degrees of freedom
+#             Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)  0.045064   0.018150   2.483   0.0168 *
+#gen         -0.019387   0.007982  -2.429   0.0192 *
+#Residual standard error: 0.04067 on 45 degrees of freedom
 #  (5 observations deleted due to missingness)
-#Multiple R-squared:  0.2326,	Adjusted R-squared:  0.2155 
-#F-statistic: 13.64 on 1 and 45 DF,  p-value: 0.0005979
+#Multiple R-squared:  0.1159,	Adjusted R-squared:  0.09625 
+#F-statistic: 5.899 on 1 and 45 DF,  p-value: 0.01921
 
 summary(lm(gemma_phC_sub[,3] ~ gen))
 #            Estimate Std. Error t value Pr(>|t|)    
@@ -58,10 +87,23 @@ summary(lm(gemma_phC_sub[,3] ~ gen))
 #Residual standard error: 0.3064 on 50 degrees of freedom
 #Multiple R-squared:  0.1154,	Adjusted R-squared:  0.09775 
 #F-statistic: 6.526 on 1 and 50 DF,  p-value: 0.01373
-tapply(X=gemma_phC_sub[,3],INDEX=gen,mean)
-#        1         2         3 
-#0.7142857 0.9047619 1.0000000 
-## out of 10, 19, and 17 inds.
+summary(glm(gemma_phC_sub[,3] ~ gen,family="binomial"))
+
+#            Estimate Std. Error z value Pr(>|z|)  
+#(Intercept)  -0.8772     1.2138  -0.723   0.4699  
+#gen           1.7119     0.7955   2.152   0.0314 *
+#    Null deviance: 37.193  on 51  degrees of freedom
+#Residual deviance: 30.603  on 50  degrees of freedom
+#AIC: 34.603
+#Number of Fisher Scoring iterations: 6
+
+sexC_sub<-sexC[which(phC$Population != 'BCTURN')]
+tapply(X=gemma_phC_sub[,3],INDEX=list(gen,sexC_sub),mean)
+#     female      male
+#1 0.8571429 0.5714286
+#2 0.9375000 0.8000000
+#3 1.0000000 1.0000000
+
 
 ## combined
 g_comb_sub<-cbind(g_RW_sub[a,],g_C_sub[a,])
@@ -74,92 +116,128 @@ N_rw<-dim(gemma_phRW_sub)[1]
 N_c<-dim(gemma_phC_sub)[1]
 host_trt<-rep(c(1,2),c(N_rw,N_c))
 summary(lm(gemma_phRW_sub[,1] ~ gen[host_trt==1]))
-#                Estimate Std. Error t value Pr(>|t|)  
-#(Intercept)     0.019278   0.008424   2.289   0.0273 *
-#gen[host == 1] -0.008555   0.003821  -2.239   0.0306 *
-#Residual standard error: 0.01902 on 41 degrees of freedom
+#                    Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)         0.018729   0.008554   2.190   0.0343 *
+#gen[host_trt == 1] -0.008547   0.003880  -2.203   0.0333 *
+#Residual standard error: 0.01932 on 41 degrees of freedom
 #  (6 observations deleted due to missingness)
-#Multiple R-squared:  0.109,	Adjusted R-squared:  0.08722 
-#F-statistic: 5.013 on 1 and 41 DF,  p-value: 0.03064
-summary(lm(gemma_phC_sub[,1] ~ gen[host_trt==2]))
-#               Estimate Std. Error t value Pr(>|t|)   
-#(Intercept)     0.04160    0.01269   3.279  0.00194 **
-#gen[host == 2] -0.01845    0.00572  -3.226  0.00226 **
-#---
-#Residual standard error: 0.03116 on 48 degrees of freedom
-#  (2 observations deleted due to missingness)
-#Multiple R-squared:  0.1782,	Adjusted R-squared:  0.1611 
-#F-statistic: 10.41 on 1 and 48 DF,  p-value: 0.002261
+#Multiple R-squared:  0.1058,	Adjusted R-squared:  0.08402 
+#F-statistic: 4.853 on 1 and 41 DF,  p-value: 0.03328
 
-summary(lm(gemma_phC_sub[,3] ~ gen[host_trt==2]))
-#               Estimate Std. Error t value Pr(>|t|)    
-#(Intercept)     0.59451    0.12126   4.903 1.04e-05 ***
-#gen[host == 2]  0.14099    0.05519   2.555   0.0137 *  
-#Residual standard error: 0.3064 on 50 degrees of freedom
-#Multiple R-squared:  0.1154,	Adjusted R-squared:  0.09775 
-#F-statistic: 6.526 on 1 and 50 DF,  p-value: 0.01373
+summary(lm(gemma_phRW_sub[,2] ~ gen[host_trt==1]))
+#                    Estimate Std. Error t value Pr(>|t|)
+#(Intercept)         0.008068   0.011748   0.687    0.496
+#gen[host_trt == 1] -0.004356   0.005329  -0.818    0.418
+#Residual standard error: 0.02653 on 41 degrees of freedom
+#  (6 observations deleted due to missingness)
+#Multiple R-squared:  0.01604,	Adjusted R-squared:  -0.007959 
+#F-statistic: 0.6683 on 1 and 41 DF,  p-value: 0.4184
+
+summary(glm(gemma_phRW_sub[,3] ~ gen[host_trt==1],family="binomial"))
+#                   Estimate Std. Error z value Pr(>|z|)  
+#(Intercept)          2.6137     1.5036   1.738   0.0821 .
+#gen[host_trt == 1]  -0.2046     0.6520  -0.314   0.7537  
+#    Null deviance: 32.295  on 48  degrees of freedom
+#Residual deviance: 32.196  on 47  degrees of freedom
+#AIC: 36.196
+#Number of Fisher Scoring iterations: 5
+
+summary(lm(gemma_phC_sub[,1] ~ gen[host_trt==2]))
+#                    Estimate Std. Error t value Pr(>|t|)   
+#(Intercept)         0.041435   0.014971   2.768  0.00800 **
+#gen[host_trt == 2] -0.018215   0.006749  -2.699  0.00958 **
+#Residual standard error: 0.03677 on 48 degrees of freedom
+#  (2 observations deleted due to missingness)
+#Multiple R-squared:  0.1317,	Adjusted R-squared:  0.1137 
+#F-statistic: 7.284 on 1 and 48 DF,  p-value: 0.009578
+
+summary(lm(gemma_phC_sub[,2] ~ gen[host_trt==2]))
+#                    Estimate Std. Error t value Pr(>|t|)  
+#(Intercept)         0.045064   0.018150   2.483   0.0168 *
+#gen[host_trt == 2] -0.019387   0.007982  -2.429   0.0192 *
+#Residual standard error: 0.04067 on 45 degrees of freedom
+#  (5 observations deleted due to missingness)
+#Multiple R-squared:  0.1159,	Adjusted R-squared:  0.09625 
+#F-statistic: 5.899 on 1 and 45 DF,  p-value: 0.01921
+
+summary(glm(gemma_phC_sub[,3] ~ gen[host_trt==2],family="binomial"))
+#                   Estimate Std. Error z value Pr(>|z|)  
+#(Intercept)         -0.8772     1.2138  -0.723   0.4699  
+#gen[host_trt == 2]   1.7119     0.7955   2.152   0.0314 *
+#    Null deviance: 37.193  on 51  degrees of freedom
+#Residual deviance: 30.603  on 50  degrees of freedom
+#AIC: 34.603
+#Number of Fisher Scoring iterations: 6
 
 ##################################################
 csC<-c("cadetblue2","cadetblue3","cadetblue4")
 csRW<-c("firebrick2","firebrick3","firebrick4")
-cl<-1.5;lx<-1.5;cm<-1.5;ca<-1.1
+cl<-1.6;lx<-2.1;cm<-1.6;ca<-1.2;cx<-1.3
 
-pdf("knulliPerformanceSV.pdf",width=8,height=12)
-par(mfrow=c(3,2))
+pdf("knulliPerformanceSV.pdf",width=12,height=12)
+layout(matrix(c(1,1,1,2:7),nrow=3,ncol=3,byrow=TRUE),widths=c(4,4,4),height=c(4,4,4))
+
+plot(c(0,1),type='n',xlab="",ylab="",axes=FALSE)
+title("(a) Experimental design",cex.main=cm)
+
+
+
 par(mar=c(4.5,5.5,2.5,1.5))
-plot(jitter(gen[host_trt==2]-1),gemma_phC_sub[,1],pch=19,col=csC[gen[host_trt==2]],axes=FALSE,xlab="Genotype",ylab="Resid. 15-d weight",cex.lab=cl,cex.axis=ca)
+plot(jitter(gen[host_trt==2]-1),gemma_phC_sub[,1],pch=19,col=csC[gen[host_trt==2]],axes=FALSE,xlab="Genotype",ylab="Resid. 15-d weight",cex.lab=cl,cex.axis=ca,cex=cx)
 mns<-tapply(X=gemma_phC_sub[,1],INDEX=gen[host_trt==2],mean,na.rm=TRUE)
 lines(c(-.2,.2),rep(mns[1],2),lwd=lx)
 lines(c(.8,1.2),rep(mns[2],2),lwd=lx)
 lines(c(1.8,2.2),rep(mns[3],2),lwd=lx)
 axis(1,at=c(0,1,2))
 axis(2)
-mtext("P = 0.002",side=3,adj=.1,line=-2)
-title("(a) 15d weight, C",cex.main=cm)
-box()
-
-plot(jitter(gen[host_trt==1]-1),gemma_phRW_sub[,1],pch=19,col=csRW[gen[host_trt==1]],axes=FALSE,xlab="Genotype",ylab="Resid. 15-d weight",cex.lab=cl,cex.axis=ca)
-mns<-tapply(X=gemma_phRW_sub[,1],INDEX=gen[host_trt==1],mean,na.rm=TRUE)
-lines(c(-.2,.2),rep(mns[1],2),lwd=lx)
-lines(c(.8,1.2),rep(mns[2],2),lwd=lx)
-lines(c(1.8,2.2),rep(mns[3],2),lwd=lx)
-axis(1,at=c(0,1,2))
-axis(2)
 mtext("P = 0.031",side=3,adj=.1,line=-2)
-title("(b) 15d weight, RW",cex.main=cm)
+title("(b) 15d weight, C",cex.main=cm)
 box()
 
-plot(jitter(gen[host_trt==2]-1),gemma_phC_sub[,2],pch=19,col=csC[gen[host_trt==2]],axes=FALSE,xlab="Genotype",ylab="Resid. 21-d weight",cex.lab=cl,cex.axis=ca)
+plot(jitter(gen[host_trt==2]-1),gemma_phC_sub[,2],pch=19,col=csC[gen[host_trt==2]],axes=FALSE,xlab="Genotype",ylab="Resid. 21-d weight",cex.lab=cl,cex.axis=ca,cex=cx)
 mns<-tapply(X=gemma_phC_sub[,2],INDEX=gen[host_trt==2],mean,na.rm=TRUE)
 lines(c(-.2,.2),rep(mns[1],2),lwd=lx)
 lines(c(.8,1.2),rep(mns[2],2),lwd=lx)
 lines(c(1.8,2.2),rep(mns[3],2),lwd=lx)
 axis(1,at=c(0,1,2))
 axis(2)
-mtext("P < 0.001",side=3,adj=.1,line=-2)
+mtext("P = 0.002",side=3,adj=.1,line=-2)
 title("(c) 21d weight, C",cex.main=cm)
 box()
 
-plot(jitter(gen[host_trt==1]-1),gemma_phRW_sub[,2],pch=19,col=csRW[gen[host_trt==1]],axes=FALSE,xlab="Genotype",ylab="Resid. 21-d weight",cex.lab=cl,cex.axis=ca)
+surv<-tapply(INDEX=gen[host_trt==2]-1,gemma_phC_sub[,3],mean)
+barplot(surv,col=csC,xlab="Genotype",ylab="Survival proportion",cex.lab=cl,cex.axis=ca,cex=cx)
+mtext("P = 0.031",side=3,adj=.5,line=-2)
+title("(d) Survival, C",cex.main=cm)
+
+plot(jitter(gen[host_trt==1]-1),gemma_phRW_sub[,1],pch=19,col=csRW[gen[host_trt==1]],axes=FALSE,xlab="Genotype",ylab="Resid. 15-d weight",cex.lab=cl,cex.axis=ca,cex=cx)
+mns<-tapply(X=gemma_phRW_sub[,1],INDEX=gen[host_trt==1],mean,na.rm=TRUE)
+lines(c(-.2,.2),rep(mns[1],2),lwd=lx)
+lines(c(.8,1.2),rep(mns[2],2),lwd=lx)
+lines(c(1.8,2.2),rep(mns[3],2),lwd=lx)
+axis(1,at=c(0,1,2))
+axis(2)
+mtext("P = 0.034",side=3,adj=.1,line=-2)
+title("(e) 15d weight, RW",cex.main=cm)
+box()
+
+
+plot(jitter(gen[host_trt==1]-1),gemma_phRW_sub[,2],pch=19,col=csRW[gen[host_trt==1]],axes=FALSE,xlab="Genotype",ylab="Resid. 21-d weight",cex.lab=cl,cex.axis=ca,cex=cx)
 mns<-tapply(X=gemma_phRW_sub[,2],INDEX=gen[host_trt==1],mean,na.rm=TRUE)
 lines(c(-.2,.2),rep(mns[1],2),lwd=lx)
 lines(c(.8,1.2),rep(mns[2],2),lwd=lx)
 lines(c(1.8,2.2),rep(mns[3],2),lwd=lx)
 axis(1,at=c(0,1,2))
 axis(2)
-mtext("P = 0.138",side=3,adj=.1,line=-2)
-title("(d) 21d weight, RW",cex.main=cm)
+mtext("P = 0.418",side=3,adj=.1,line=-2)
+title("(f) 21d weight, RW",cex.main=cm)
 box()
 
-surv<-tapply(INDEX=gen[host_trt==2]-1,gemma_phC_sub[,3],mean)
-barplot(surv,col=csC,xlab="Genotype",ylab="Survival proportion",cex.lab=cl,cex.axis=ca)
-mtext("P = 0.014",side=3,adj=.5,line=-2)
-title("(e) Survival, C",cex.main=cm)
 
 surv<-tapply(INDEX=gen[host_trt==1]-1,gemma_phRW_sub[,3],mean)
-barplot(surv,col=csRW,xlab="Genotype",ylab="Survival proportion",cex.lab=cl,cex.axis=ca)
-mtext("P = 0.759",side=3,adj=.5,line=-2)
-title("(f) Survival, RW",cex.main=cm)
+barplot(surv,col=csRW,xlab="Genotype",ylab="Survival proportion",cex.lab=cl,cex.axis=ca,cex=cx)
+mtext("P = 0.754",side=3,adj=.5,line=-2)
+title("(g) Survival, RW",cex.main=cm)
 dev.off()
 
 
