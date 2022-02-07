@@ -721,24 +721,7 @@ for(i in 1:5){
 dev.off()
 ## same for other combinations, see summarizePips.R
 ```
-I also tried calling "genotypes" for the "SV" on scaffold 500 (PCA and k-means clustering). I then asked whether SV genotype is associated with performnance (see [lmSV.R](lmSV.R)). There is some evidence of a negative association with 15 d weight on RW, 15 and 21 d weight on C, and a positive association on C. Interesting but need to think more.
-
-```{R}
-## R script to test SV/fusion genotype effect on performance
-load("gp.rdat")
-
-## scaffold 500
-a<-which(snps[,1]==500)
-
-## pca RW without BCTURN
-pc<-prcomp(t(g_RW_sub[a,]),center=TRUE,scale=FALSE)
-ko<-kmeans(pc$x[,1],centers=3)
-gen<-ko$cluster ## these are sorted
-
-## lm fits, RW only 15 d weight significant
-summary(lm(gemma_phRW_sub[,1] ~ gen))
-
-```
+I also tried calling "genotypes" for the "SV" on scaffold 500 (PCA and k-means clustering). I then asked whether SV genotype is associated with performnance (see [lmSV.R](lmSV.R)). There is evidence of a negative association with 15 d weight on RW, 15 and 21 d weight on C, and a positive association with survival on C. The survival effect on C appears to be sex-specific, with a greater effect in males.
 
 ## Gene flow-selection balance for the SV locus in *T. knulli*
 
