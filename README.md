@@ -581,7 +581,7 @@ The goal is to map performance (weight, weight change between 15 and 21 days and
 4. 21-15 day weight change, control sex and stage
 5. 21-15 day weight change, control sex
 
-See [formatPhenoGeno.R](formatPhenoGeno.R).
+See [formatPhenoGeno.R](formatPhenoGeno.R). This scrip uses gentically-determined (based on coverage) sexes in place of the inital sex calls by Patrik (mostly matched), see [findSexChrom.R](findSexChrom.R).
 
 * Add SNP names and placeholder alleles IDs (don't really matter) to the genotype files for `gemma`.
 
