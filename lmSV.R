@@ -169,6 +169,68 @@ summary(glm(gemma_phC_sub[,3] ~ gen[host_trt==2],family="binomial"))
 #AIC: 34.603
 #Number of Fisher Scoring iterations: 6
 
+cm<-1.5;cl<-1.5
+
+pdf("KnulliSexWeightSV.pdf",width=9,height=9)
+par(mfrow=c(2,2))
+par(mar=c(4.5,5.5,2.5,1.5))
+cs<-rep("gray10",length(sexC_sub))
+a<-which(sexC_sub=="male")
+cs[a]<-"red"
+plot(gen[host_trt==2],gemma_phC_sub[,1],pch=19,col=alpha(cs,.5),axes=FALSE,xlab="Genotype",ylab="Weight",cex.lab=cl)
+a<-which(sexC_sub=="male")
+o<-lm(gemma_phC_sub[a,1] ~ gen[host_trt==2][a])
+abline(o$coefficients,lwd=1.8,col="red")
+a<-which(sexC_sub=="female")
+o<-lm(gemma_phC_sub[a,1] ~ gen[host_trt==2][a])
+abline(o$coefficients,lwd=1.8,col="gray10")
+axis(1,at=1:3,c("0","1","2"))
+axis(2)
+box()
+title(main="C, 15d weight",cex.main=cm)
+
+plot(gen[host_trt==2],gemma_phC_sub[,2],pch=19,col=alpha(cs,.5),axes=FALSE,xlab="Genotype",ylab="Weight",cex.lab=cl)
+a<-which(sexC_sub=="male")
+o<-lm(gemma_phC_sub[a,2] ~ gen[host_trt==2][a])
+abline(o$coefficients,lwd=1.8,col="red")
+a<-which(sexC_sub=="female")
+o<-lm(gemma_phC_sub[a,2] ~ gen[host_trt==2][a])
+abline(o$coefficients,lwd=1.8,col="gray10")
+axis(1,at=1:3,c("0","1","2"))
+axis(2)
+box()
+title(main="C, 21d weight",cex.main=cm)
+
+
+cs<-rep("gray10",length(sexRW_sub))
+a<-which(sexRW_sub=="male")
+cs[a]<-"red"
+plot(gen[host_trt==1],gemma_phRW_sub[,1],pch=19,col=alpha(cs,.5),axes=FALSE,xlab="Genotype",ylab="Weight",cex.lab=cl)
+a<-which(sexRW_sub=="male")
+o<-lm(gemma_phRW_sub[a,1] ~ gen[host_trt==1][a])
+abline(o$coefficients,lwd=1.8,col="red")
+a<-which(sexRW_sub=="female")
+o<-lm(gemma_phRW_sub[a,1] ~ gen[host_trt==1][a])
+abline(o$coefficients,lwd=1.8,col="gray10")
+axis(1,at=1:3,c("0","1","2"))
+axis(2)
+box()
+title(main="RW, 15d weight",cex.main=cm)
+
+plot(gen[host_trt==1],gemma_phRW_sub[,2],pch=19,col=alpha(cs,.5),axes=FALSE,xlab="Genotype",ylab="Weight",cex.lab=cl)
+a<-which(sexRW_sub=="male")
+o<-lm(gemma_phRW_sub[a,2] ~ gen[host_trt==1][a])
+abline(o$coefficients,lwd=1.8,col="red")
+a<-which(sexRW_sub=="female")
+o<-lm(gemma_phRW_sub[a,2] ~ gen[host_trt==1][a])
+abline(o$coefficients,lwd=1.8,col="gray10")
+axis(1,at=1:3,c("0","1","2"))
+axis(2)
+box()
+title(main="RW, 21d weight",cex.main=cm)
+dev.off()
+
+
 ##################################################
 csC<-c("cadetblue2","cadetblue3","cadetblue4")
 csRW<-c("firebrick2","firebrick3","firebrick4")
