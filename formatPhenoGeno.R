@@ -60,6 +60,22 @@ par(mar=c(4,5,2,1))
 
 a<-which(snps[,1]==500)
 
+out<-prcomp(g[,a],center=TRUE,scale=FALSE)
+
+## get CC BCE homozygotes
+bce_cc<-which(out$x[,1] < -6 & out$x[,2] > 5)
+## get RWRW BEC homozygotes
+bce_rw<-which(out$x[,1] > 10 & out$x[,2] > -5)
+## get CC BCTURN homozygotes
+bcturn_cc<-which(out$x[,1] < -7 & out$x[,2] < -5)
+
+write.table(ph[bce_cc,1],file="IDS_bce_cc.txt",quote=FALSE,row.names=F,col.names=FALSE)
+write.table(ph[bce_rw,1],file="IDS_bce_rw.txt",quote=FALSE,row.names=F,col.names=FALSE)
+write.table(ph[bcturn_cc,1],file="IDS_bcturn_cc.txt",quote=FALSE,row.names=F,col.names=FALSE)
+# 33 IDS_bce_cc.txt
+# 25 IDS_bce_rw.txt
+# 21 IDS_bcturn_cc.txt
+
 sy<-c(3,4)
 cs<-c("cadetblue","darkolivegreen","chocolate","darkgoldenrod1")
 for(i in 1:25){
