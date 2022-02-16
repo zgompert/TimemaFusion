@@ -781,7 +781,7 @@ My plan is to determine the divergence time for the two SV alleles (C vs. RW) fo
 
 ## Divergence time dating for the SV locus alleles with dadi
 
-I am trying this with dadi as well. See [est2d.pl](est2d.pl) wirth groups defined with [formatPhenoGeno.R](formatPhenoGeno.R).
+I am trying this with dadi as well. See [est2d.pl](est2d.pl) wirth groups defined with [formatPhenoGeno.R](formatPhenoGeno.R). Actually, forgot that I get the 2d SFS from dadi not ANGSD. Will try this next.
 
 ## LD for refugio versus hwy154
 
