@@ -783,6 +783,99 @@ My plan is to determine the divergence time for the two SV alleles (C vs. RW) fo
 
 I am trying this with dadi as well. See [est2d.pl](est2d.pl) wirth groups defined with [formatPhenoGeno.R](formatPhenoGeno.R). Actually, forgot that I get the 2d SFS from dadi not ANGSD. Will try this next.
 
+## Divergence dating with beast
+
+At first, I tried dating the inversion with beast using only *T. knulli* and *T. petita* (the GBS data used for everything else above). This did not work well as *T. knulli* was not monophyletic. Thus, I added *T. poppensis* and *T. californicum* to the analysis as well. Here is what I did.
+
+* Alignment of *T. poppensis* and *T. californicum* GBS data to the *T. knulli* reference genome. The data for this are in `/uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/reads_cali_superg` and `/uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/reads_popp_superg `. These data come from here `/uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/supergene_gbs/06_split_data_bysp/` and are described in [Villoutreix et al. 2021](https://www.science.org/doi/full/10.1126/science.aaz4351). This included 329 *T. poppensis* and 86 *T. californicum*, but all were not used downstream. Information on the *T. californicum* samples is in `/uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/reads_cali_superg/Tcalifornicum_Lick.BL.bial.noindel.qs20.cov50.mdp14Mdp290.maf0.01.samples` (includes multiple populations).
+
+Alignments were done with `bwa`:
+
+```{bash}
+module load bwa 
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/reads_popp_superg
+
+perl BwaAlignFork.pl *fq
+```
+```{perl}
+#!/usr/bin/perl
+#
+# conver sam to bam, then sort and index 
+#
+
+
+use Parallel::ForkManager;
+my $max = 60;
+my $pm = Parallel::ForkManager->new($max);
+
+my $genome = "/uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta";
+
+FILES:
+foreach $fq (@ARGV){
+	$pm->start and next FILES; ## fork
+        if ($fq =~ m/^([A-Z0-9_]+)/){
+        	$ind = $1;
+    	}
+    	else {
+       		die "Failed to match $file\n";
+    	}
+	system "bwa aln -n 4 -l 20 -k 2 -t 1 -q 10 -f aln"."$ind".".sai $genome $fq\n";
+	system "bwa samse -n 1 -r \'\@RG\\tID:tpopp-"."$ind\\tPL:ILLUMINA\\tLB:tpopp-"."$ind\\tSM:tpopp-"."$ind"."\' -f aln"."$ind".".sam $genome aln"."$ind".".sai $fq\n";
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
+* Variant calling focused on the *Perform* locus.
+
+```{bash}
+#!/bin/sh 
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=12
+#SBATCH --account=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=bcfCall
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+    echo ------------------------------------------------------
+    echo SLURM: job identifier is $SLURM_JOBID
+    echo SLURM: job name is $SLURM_JOB_NAME
+    echo ------------------------------------------------------
+
+module load samtools/1.5
+module load bcftools/1.6
+## bcftools 1.6
+
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_rw_plus
+
+samtools mpileup -b bams_comb_og -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta -q 20 -Q 30 -I -g -u -t DP,AD,ADF,ADR -r ScFnSIn_500_HRSCAF958:13093370-43606674 -o t_rw_comb_outg_variants.bcf
+bcftools call -v -c -p 0.01 -O z -t ScFnSIn_500_HRSCAF958:13093370-43606674 -o t_rw_comb_outg_perform.vcf.gz t_rw_comb_outg_variants.bcf
+```
+
+```{bash}
+#!/bin/sh 
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=12
+#SBATCH --account=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=mpDepth
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load samtools/1.5
+module load bcftools/1.6
+## bcftools 1.6
+
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_rw_plus
+
+samtools depth -f bams_comb_og --reference /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta -r ScFnSIn_500_HRSCAF958:13093370-43606674 -q 20 -Q 30 > t_rw_comb_outg_perform_reg_depth.txt
+```
+
 ## LD for refugio versus hwy154
 
 Working from `ld_refugio` and `ld_hwy154` within `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion`. 
