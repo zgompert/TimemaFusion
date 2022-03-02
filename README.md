@@ -855,6 +855,10 @@ samtools mpileup -b bams_comb_og -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home
 bcftools call -v -c -p 0.01 -O z -t ScFnSIn_500_HRSCAF958:13093370-43606674 -o t_rw_comb_outg_perform.vcf.gz t_rw_comb_outg_variants.bcf
 ```
 
+* Identifying invariant nucleotides.
+
+I also computed the depth (coverage) for all sites within the perform locus to be able to identify invariant sites (i.e., sites with enough data that we could have identified a SNP but didn't). This uses the same quality score thresholds used for variant calling.
+
 ```{bash}
 #!/bin/sh 
 #SBATCH --time=72:00:00
@@ -875,6 +879,43 @@ cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align
 
 samtools depth -f bams_comb_og --reference /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta -r ScFnSIn_500_HRSCAF958:13093370-43606674 -q 20 -Q 30 > t_rw_comb_outg_perform_reg_depth.txt
 ```
+I counted variable sites as those with 2X coverage overall and data for 80% of individuals and that were not called as variants (even before filtering). See [SummarizeDepthBcounts.R](SummarizeDepthBcounts.R). 
+
+I then summarized the invariant base counts.
+
+```{bash}
+samtools faidx --region-file invar_positions_perform_og.list -o invar_bases.fa /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta
+
+cat invar_bases.fa | grep -v "^>" | sort | uniq -c
+#  18425 A
+#  11610 C
+#  12007 G
+#  18570 T
+```
+* Generating the alignment file for beast.
+
+```{bash}
+bcftools view -O b -o filtered2x_t_rw_comb_outg_perform.bcf filtered2x_t_rw_comb_outg_perform.vcf
+
+perl bcf2fa.pl -i filtered2x_t_rw_comb_outg_perform.bcf -o perform_comb_og.fa
+```
+
+Retained 789 variable sites
+
+Subset individuals. [chooseSubset.R](chooseSubset.R).
+
+```{bash}
+perl subsetAlign.pl bce*filelist sub_*filelist
+```
+See [subsetAlign.pl](subsetAlign.pl).
+
+
+Convert to nexus. 
+
+```{bash}
+perl aliconverter.pl -i sub_perform_comb_og.fa -o sub_perform_comb_og.nex
+```
+See [aliconverter.pl](aliconverter.pl).
 
 ## LD for refugio versus hwy154
 
