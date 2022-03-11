@@ -917,6 +917,71 @@ perl aliconverter.pl -i sub_perform_comb_og.fa -o sub_perform_comb_og.nex
 ```
 See [aliconverter.pl](aliconverter.pl).
 
+## Nanopore sequencing to verify the inversion within *T. knulli*
+
+We want to verify that the *Perform* inversion is indeed segregating within *T. knulli* (i.e. that it matches the between species inversion). I generated long-read whole genome sequence data for 3 *T. knulli* homozygous for the non-inverted (C) allele with a MINion to do this. The three samples, 036, 061 and 076, were homozygous based on a PCA and were previously extracted by Tom (they are part of the GBS data set). This was not a HMW extraction and read lengths were shorten than one would normally get. Still, it might be enough.
+
+I am basing my analysis on a [pipeline from Oxford nanopore](https://github.com/nanoporetech/pipeline-structural-variation), but I am re-implementing the code to avoid the conundrum of installing everything to make Snakemake work (this also ensures we actually know what is going on).
+
+I first concatenated the fastq files for each individual, resulting in 3 fastq files in `/uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore/cat_fastq`. I then used `minimap2` (version 2.23-r1117-dirty) to align the sequences to the *T. knulli* refernce genome.
+
+```{bash}
+#!/bin/sh
+#SBATCH --time=96:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --partition=gompert-np
+#SBATCH --account=gompert-np
+#SBATCH --job-name=minimap2
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+
+module load miniconda3/latest
+#pip install nanofilt
+module load samtools
+## samtools 1.12
+module load minimap2
+## minimap2 2.23-r1117-dirty
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore/cat_fastq
+
+perl MiniMap2Fork.pl *fastq
+```
+
+```{perl}
+#!/usr/bin/perl
+#
+# alignment with minimap2 and conversion to bam with samtools bcftools 
+#
+
+
+use Parallel::ForkManager;
+my $max = 4;
+my $pm = Parallel::ForkManager->new($max);
+
+my $genome = "/uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta";
+
+FILES:
+foreach $fq (@ARGV){
+	$pm->start and next FILES; ## fork
+        if ($fq =~ m/^([A-Za-z0-9_]+)/){
+        	$ind = $1;
+    	}
+    	else {
+       		die "Failed to match $file\n";
+    	}
+
+	system "cat $fq | NanoFilt -q 6 | minimap2 -t 20 -K 500M -ax map-ont --MD -Y -r \'\@RG\\tID:$ind\\tLB:$ind\\tSM:$ind"."\' -d $ind.idx /uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_knulli/tknulli_chroms_hic_output.fasta - | samtools sort -@ 20 -O BAM -o $ind.bam - && samtools index -@ 20 $ind.bam\n";
+
+	
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
+
+
 ## LD for refugio versus hwy154
 
 Working from `ld_refugio` and `ld_hwy154` within `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion`. 
