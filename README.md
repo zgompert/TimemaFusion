@@ -921,7 +921,7 @@ See [aliconverter.pl](aliconverter.pl).
 
 We want to verify that the *Perform* inversion is indeed segregating within *T. knulli* (i.e. that it matches the between species inversion). I generated long-read whole genome sequence data for 3 *T. knulli* homozygous for the non-inverted (C) allele with a MINion to do this. The three samples, 036, 061 and 076, were homozygous based on a PCA and were previously extracted by Tom (they are part of the GBS data set). This was not a HMW extraction and read lengths were shorten than one would normally get. Still, it might be enough.
 
-I am basing my analysis on a [pipeline from Oxford nanopore](https://github.com/nanoporetech/pipeline-structural-variation), but I am re-implementing the code to avoid the conundrum of installing everything to make Snakemake work (this also ensures we actually know what is going on). Specific details come from [Pipeline.md](Pipeline.md).
+I am basing my analysis on a [pipeline from Oxford nanopore](Pipeline.md), but I am re-implementing the code to avoid the conundrum of installing everything to make Snakemake work (this also ensures we actually know what is going on). Specific details come from [this file](Snakefile).
 
 I first concatenated the fastq files for each individual, resulting in 3 fastq files in `/uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore/cat_fastq`. I then used `minimap2` (version 2.23-r1117-dirty) to align the sequences to the *T. knulli* refernce genome.
 
