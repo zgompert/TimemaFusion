@@ -314,9 +314,17 @@ cd /scratch/general/lustre/cactusNp
 
 module load cactus
 
+## podura vs cristinae
 cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_TcrsGS_Tpod.txt cactusTcrsGS_Tpod.hal --maxCores 80
-```
 
+## podura vs chumash
+cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_Tknul_Tchum.txt cactusTknul_Tchum.hal --maxCores 80 
+
+~/source/hal/bin/halSynteny --queryGenome t_podura --targetGenome t_cris_gs cactusTcrsGS_Tpod.hal out_synteny_CrisGSPod.psl
+
+~/source/hal/bin/halSynteny --queryGenome t_podura --targetGenome t_chumash cactusTchum_Tpod.hal out_synteny_ChumPod.psl
+```
+I summarized both alignments with [SynPlotsPodVsCrisChum.R](SynPlotsPodVsCrisChum.R). The alignments are a bit messier with *T. podura* than with the orther genomes[SynTcrisGSTpod.pdf](https://github.com/zgompert/TimemaFusion/files/8356709/SynTcrisGSTpod.pdf). I will return to this later.
 
 This next set of genome alignments aims to get at the details of the SV differentiating green versus green striped *T. cristinae*. The first step was repeat masking for the green (unstriped) *T. cristinae* genome (which was not used in the analyses above.
 
