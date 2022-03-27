@@ -1,6 +1,6 @@
 # TimemaFusion
 
-Characterizing chromosomal fusion(s) in *Timema* stick insects
+This page began as a project to look at chromosomal fusions in *Timema* stick insects, specifically *T. knulli* and some *T. cristinae*, but has now evolved to include results and code about structural variation in *Timema* more generally, including comparative alignments for multiple species, the *Perform* inversion in *T. knullia* and *Mel-Stripe* in *T. cristiane* (with a focus on between mountain differences and pattern, i.e., stripe, rather than color).
 
 ## Data sets
 
@@ -316,6 +316,23 @@ module load cactus
 
 cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_TcrsGS_Tpod.txt cactusTcrsGS_Tpod.hal --maxCores 80
 ```
+
+
+This next set of genome alignments aims to get at the details of the SV differentiating green versus green striped *T. cristinae*. The first step was repeat masking for the green (unstriped) *T. cristinae* genome (which was not used in the analyses above.
+
+```{bash}
+#!/bin/sh 
+module load repeatmasker
+#version 4.0.7
+cd /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/repeat_mask
+
+## run repeat masker on each genome sequence, uses library from the 2020 Science paper 
+## developed by Victor
+
+RepeatMasker -s -e ncbi -xsmall -pa 24 -lib RepeatLibMergeCentroidsRM.lib /uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist_gus/mod_hic_output.fasta
+
+```
+
 
 ## Sex chromosome
 
