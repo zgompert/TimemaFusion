@@ -341,6 +341,25 @@ RepeatMasker -s -e ncbi -xsmall -pa 24 -lib RepeatLibMergeCentroidsRM.lib /uufs/
 
 ```
 
+I then aligned the genomes with `cactus` and identified synteny blocks.
+
+```{bash}
+#!/bin/sh 
+#SBATCH --time=240:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=24
+#SBATCH --account=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=cactus-master
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+cd /scratch/general/lustre/cactusNp
+
+module load cactus
+
+cactus jobStore /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/comp_aligns/cactusTimema_TcrGS_TcrGUS.txt cactusTcrGS_TcrGUS.hal --maxCores 80
+```
 
 ## Sex chromosome
 
