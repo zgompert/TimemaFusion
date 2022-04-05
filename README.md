@@ -429,7 +429,7 @@ Here are the sample sizes, sites and hosts for the populations I will use:
 
 I calculated Fst for each SNP and summarized Fst at the linkage group level (for the old *T. cristinae* LGs from the melanic genome). See [hostFst.R](hostFst.R). The signal for *T. knulli* RW vs C is clear (elevated Fst on LG 11). Nothing else really stands out, except a weaker signal on LG 8 likely associated with color in *T. californicum*.
 
-## Alignment, variant calling and filtering for GBS data
+## Alignment, variant calling and filtering for GBS data: Redwood data sets
 
 * **rw_plus** data set; includes *T. knulli* and *T. petita*.
 
@@ -488,8 +488,6 @@ perl vcf2glSamt.pl 0.0 morefilter_filtered2x_tcr_rw_knulli_variants.vcf
 perl vcf2glSamt.pl 0.0 morefilter_filtered2x_tcr_rw_petita_variants.vcf 
 #Number of loci: 32859; number of individuals 69
 ```
-
-## Alignment, variant calling and filtering for mate-pair data
 
 ## Genotype inference for *T. knulli* and *T. petita* (redwood project)
 
@@ -1024,6 +1022,101 @@ foreach $fq (@ARGV){
 
 $pm->wait_all_children;
 ```
+## Alignment, variant calling and filtering for GBS data: *T. cristinae*
+
+* Includes FHA 2013 and Refugio (20XX and 2019)
+
+1. DNA sequence alignment with `bwa`; used two different genomes, HiC versions of the green striped and green unstriped *T. cristinae* genomes, see [BwaAlignFork_FHA.pl](BwaAlignFork_FHA.pl).
+
+2. Compress, sort and index alignments with `samtools`.
+
+3. Variant calling with `samtools` (version 1.5) and `bcftools` (version 1.6).
+
+Green striped genome = `/uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_crist/timema_cristinae_12Jun2019_lu3Hs.fasta/`
+
+Green unstriped genome =  `/uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist_gus/mod_hic_output.fasta`
+
+For green striped (in `align_fha_mapping_sample_gs`) subdirectory
+```{bash}
+module load samtools/1.5
+module load bcftools
+## samtools 1.5
+## bcftools 1.6
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_fha_mapping_sample
+
+samtools mpileup -b bams -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_crist/timema_cristinae_12Jun2019_lu3Hs.fasta -q 20 -Q 30 -I -g -u -t DP,AD,ADF,ADR -o tcr_fha_mapping_variants.bcf
+bcftools call -v -c -p 0.01 -O v -o tcr_fha_mapping_variants.vcf tcr_fha_mapping_variants.bcf
+```
+
+
+For green unstriped (in `align_fha_mapping_sample_gus`) subdirectory
+```{bash}
+module load samtools/1.5
+module load bcftools/1.6
+## samtools 1.5
+## bcftools 1.6
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_fha_mapping_sample
+
+samtools mpileup -b bams -C 50 -d 500 -f /uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_crist_gus/mod_hic_output.fasta -q 20 -Q 30 -I -g -u -t DP,AD,ADF,ADR -o tcr_fha_mapping_gus_variants.bcf
+bcftools call -v -c -p 0.01 -O v -o tcr_fha_mapping_gus_variants.vcf tcr_fha_mapping_gus_variants.bcf
+```
+
+* I moved the variant files to `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_stripe/fha_2013_variants_gs` and `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_stripe/fha_2013_variants_gus`. I then filtered the variants sets with `vcfFilter.pl` and `filterSomeMore.pl`.
+
+I filtered based on the same criteria for both species/data sets: 2X minimum coverage per individual, a minimum of 10 reads supporting the alternative allele, Mann-Whittney P values for BQ, MQ and read position rank-sum tests > 0.005, a minimum ratio of variant confidence to non-reference read depth of 2, a minimum mapping quality of 30, no more than 20% of individuals with missing data, only bi-allelic SNPs, and coverage not > 3 SDs of the mean coverage (at the SNP level).
+
+This left me with 169,051 SNPs for striped genome and 121,635 for the unstriped genome.
+
+* Lastly, vcf files were converted to genotype likelihood format. I decided to filter to only retain SNPs with MAF > 0.01 at this stage as well.
+
+```{bash}
+perl vcf2glSamt.pl 0.01 morefilter_filtered2x_tcr_fha_mapping_variants.vcf 
+Number of loci: 97126; number of individuals 602
+perl vcf2glSamt.pl 0.01 morefilter_filtered2x_tcr_fha_mapping_gus_variants.vcf 
+Number of loci: 69756; number of individuals 602
+```
+Thus, for analysis, I ended up with **97,126** or **69,756** SNPs and **602** individuals. 
+
+## Genotype inference for FHA *T. cristinae* for stripe mapping
+
+Working in the variant subdirectories in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_stripe`. I used `popmod` (version 0.1) to obtain Bayesian estiamtes of genotypes (and allele frequencies). I used this rather than `entropy` because of the large sample size and lack of population structure.
+
+Posterior estimates were based on three chains, each with 6000 steps, a 1000 step burnin and thinning interfal of 2. (with hdf5/1.10.7)
+
+```{perl}
+#!/usr/bin/perl
+
+use Parallel::ForkManager;
+my $max = 16;
+my $pm = Parallel::ForkManager->new($max);
+
+foreach $iter (1..3){
+	$pm->start and next; ## fork
+        $out = "po_$iter.hdf5";
+	system "popmod -i filtered_tcris_fha2013_bin_gs.gl -n 6000 -b 1000 -t 2 -o $out\n";
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
+
+```{bash}
+estpost_popmod -o g_fha_2013_gus -p g -s 0 -w 0 po_*
+#file = po_1.hdf5
+#file = po_2.hdf5
+#file = po_3.hdf5
+#parameter dimensions for g: loci = 69756, ind = 602, genotypes = 3, chains = 3
+
+estpost_popmod -o g_fha_2013_gs -p g -s 0 -w 0 po_*
+#file = po_1
+#file = po_2
+#file = po_3
+#parameter dimensions for g: loci = 97126, ind = 602, genotypes = 3, chains = 3
+```
+## Genome-wide association mapping of stripe with Gemma
+
 
 
 ## LD for refugio versus hwy154
