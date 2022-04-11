@@ -1079,6 +1079,8 @@ Number of loci: 69756; number of individuals 602
 ```
 Thus, for analysis, I ended up with **97,126** or **69,756** SNPs and **602** individuals. 
 
+* These steps were all repeated for the Refugio samples, with the 2019 samples treated separately. Read, alignment and variant subdirectories are all in `/uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV`. The final variant set in the genotype likelihood files (also filtered for MAF > 0.01) includes **238** individuals and **74,658** (green striped) or **60,096** (green unstriped) SNPs.
+
 ## Genotype inference for FHA *T. cristinae* for stripe mapping
 
 Working in the variant subdirectories in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_stripe`. I used `popmod` (version 0.1) to obtain Bayesian estiamtes of genotypes (and allele frequencies). I used this rather than `entropy` because of the large sample size and lack of population structure.
@@ -1115,7 +1117,78 @@ estpost_popmod -o g_fha_2013_gs -p g -s 0 -w 0 po_*
 #file = po_3
 #parameter dimensions for g: loci = 97126, ind = 602, genotypes = 3, chains = 3
 ```
-## Genome-wide association mapping of stripe with Gemma
+## Genotype inference for Refugio *T. cristinae* for stripe mapping
+
+Unlike the FHA samples, the Refugio samples span multiple populations sampled along a transect up a mountain. Thus, there is population structure to deal with, and I therefore used `entropy_mp` (version 2.0) to estimate genotypes. These analyses are in `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_stripe/refugio_variants_gs` and `/uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_stripe/refugio_variants_gus`.
+
+First, I generated genotype point estimates with estpEM (version 0.1) to initialize the `entropy_mp` runs.
+
+```{bash}
+estpEM -i *gl -o emAf.txt -h 1 -e 0.001 -m 20
+```
+
+Then, I used the EM allele frequency point estimates (extracted from `emAf.txt`) and genotype likelihoods to obtain quick and dirty genotype point estimates.
+
+```{bash}
+perl gl2genest.pl pt_emAf.txt *gl
+```
+
+These were then used to obtain initial values for `entropy_mp` for *k*=2 only (see `initq.R`).
+
+```{R}
+library(data.table)
+g<-as.matrix(fread("pntest_filtered_tcr_refugio_variants_gs.txt",header=FALSE))
+
+## pca on the genotype covariance matrix
+pcgcov<-prcomp(x=t(g),center=TRUE,scale=FALSE)
+## kmeans and lda
+library(MASS)
+k2<-kmeans(pcgcov$x[,1:5],2,iter.max=10,nstart=10,algorithm="Hartigan-Wong")
+ldak2<-lda(x=pcgcov$x[,1:5],grouping=k2$cluster,CV=TRUE)
+
+write.table(round(ldak2$posterior,5),file="ldak2.txt",quote=F,row.names=F,col.names=F)
+save(list=ls(),file="initq.rdat")
+```
+
+Lastly, I ran 20 chains (for efficiency) each with a 1000 iteration burnin and 1500 steps (thinning interval of 5) for inference.
+
+```{bash}
+#!/bin/sh 
+#SBATCH --time=280:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=20
+#SBATCH --account=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=entropy
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load hdf5 gsl gcc/9.2.0
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_stripe/refugio_variants_gs
+
+perl forkEntropy.pl
+```
+
+```{perl}
+#!/usr/bin/perl
+# fork script for entropy 
+
+use Parallel::ForkManager;
+my $max = 40;
+my $pm = Parallel::ForkManager->new($max);
+
+$k = 2;
+foreach $ch (0..19){ 
+	sleep 2;
+	$pm->start and next;
+	$out = "out_refugio_gs_k$k"."_ch$ch".".hdf5";
+	system "entropy_mp -i filtered_tcr_refugio_variants_gs.gl -n 2 -m 1 -l 1500 -b 1000 -t 5 -k $k -o $out -q ldak$k.txt -s 20\n";
+	$pm->finish;
+}
+$pm->wait_all_children;
+```
+
+## Genome-wide association mapping of stripe with Gemma for FHA and Reugio
 
 
 
