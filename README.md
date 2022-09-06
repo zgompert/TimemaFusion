@@ -820,11 +820,6 @@ With the latest alignments between *T. knulli* and (i) *T. cristiane* or *T. chu
 
 My plan is to determine the divergence time for the two SV alleles (C vs. RW) for the perform locus. This can be done in a phylogeneitc context. We have a tree from Victor, described in [Riesch_et_al-2017](https://github.com/zgompert/TimemaFusion/files/7738281/Riesch_et_al-2017-Nature_Ecology_.26_Evolution.pdf). Doro used this tree for divergence time data of the *Mel-Stripe* [Lindtke et al. 2017](https://onlinelibrary.wiley.com/doi/full/10.1111/mec.14280). The key is to use the callibrations from Victor's tree to callibrate a tree with *T. knullia* SV alleles and *T. petita*. See the DRYAD code from [Doro](https://datadryad.org/stash/dataset/doi:10.5061/dryad.jt644) and [Victor](https://datadryad.org/stash/dataset/doi:10.5061/dryad.nq67q), along withe Doro's [supplemental material](https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fmec.14280&file=mec14280-sup-0001-Supinfo.pdf).
 
-
-## Divergence time dating for the SV locus alleles with dadi
-
-I am trying this with dadi as well. See [est2d.pl](est2d.pl) wirth groups defined with [formatPhenoGeno.R](formatPhenoGeno.R). Actually, forgot that I get the 2d SFS from dadi not ANGSD. Will try this next.
-
 ## Divergence dating with beast
 
 At first, I tried dating the inversion with beast using only *T. knulli* and *T. petita* (the GBS data used for everything else above). This did not work well as *T. knulli* was not monophyletic. Thus, I added *T. poppensis* and *T. californicum* to the analysis as well. Here is what I did.
@@ -1022,6 +1017,148 @@ foreach $fq (@ARGV){
 
 $pm->wait_all_children;
 ```
+The above didn't succeed (just not enough data). So, I tried again with a two thorax HMW extractions from a single T. knulli, BCEC-22-4 (803 and 1018 ng of DNA in the two samples based on my Qubit4). 
+
+I first ran the guppy (version 6.1.7) basecaller algorithm. This is all within `/uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore`.
+
+```{bash}
+#!/bin/sh
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --partition=notchpeak-gpu
+#SBATCH --account=notchpeak-gpu
+#SBATCH --gres=gpu
+#SBATCH --job-name=guppybasecall
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load guppy/6.1.7_gpu
+
+guppy_basecaller --input_path /uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore/Tknulli_BCEC-22-4/Tknulli_BCEC-22-4/20220829_2220_MN33647_FAU30387_24dedc18/fast5 --save_path /uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore/fastq_BCEC-22-4 --flowcell FLO-MIN106 --kit SQK-LSK109 -x auto
+```
+This generated 471,648 sequences and a total of 862,526,421 bps (~.5X coverage).
+
+I then used minimap2 to align the sequence data to the *T. knulli* reference genome. 89.8% aligned to the reference.
+
+```{bash}
+#!/bin/sh
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --partition=notchpeak
+#SBATCH --account=gompert
+#SBATCH --job-name=minimap2
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load miniconda3/latest
+#pip install nanofilt
+module load samtools
+## samtools 1.16
+module load minimap2
+## minimap2 2.23-r1117-dirty
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore/fastq_BCEC-22-4
+
+perl MiniMap2Fork.pl BCEC-22-4.fastq 
+```
+
+```{perl}
+#!/usr/bin/perl
+#
+# alignment with minimap2 and conversion to bam with samtools bcftools 
+#
+
+
+use Parallel::ForkManager;
+my $max = 2;
+my $pm = Parallel::ForkManager->new($max);
+
+my $genome = "/uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta";
+
+FILES:
+foreach $fq (@ARGV){
+	$pm->start and next FILES; ## fork
+	$ind = "BCEC-22-4";
+	system "cat $fq | NanoFilt -q 6 | minimap2 -t 20 -K 500M -ax map-ont --MD -Y -r \'\@RG\\tID:$ind\\tLB:$ind\\tSM:$ind"."\' -d $ind.idx /uufs/chpc.utah.edu/common/home/gompert-group1/data/timema/hic_genomes/t_knulli/tknulli_chroms_hic_output.fasta - | samtools sort -@ 20 -O BAM -o $ind.bam - && samtools index -@ 20 $ind.bam\n";
+
+	
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
+
+I then called SVs with `sniffles2` (version 2.0.3)
+
+```{bash}
+#!/bin/sh
+#SBATCH --time=48:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --partition=gompert-np
+#SBATCH --account=gompert-np
+#SBATCH --job-name=sniffles
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+
+module load miniconda3/latest
+#pip install sniffles
+## sniffles2 version 2.0.3
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/Tknulli_nanopore/alignment_BCEC-22-4
+
+perl SnifflesFork.pl *bam
+```
+
+```{perl}
+#!/usr/bin/perl
+#
+# variant calling with sniffles 
+#
+
+
+use Parallel::ForkManager;
+my $max = 4;
+my $pm = Parallel::ForkManager->new($max);
+
+my $genome = "/uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta";
+
+FILES:
+foreach $bam (@ARGV){
+	$pm->start and next FILES; ## fork
+        if ($bam =~ m/^([A-Za-z0-9_\-]+)/){
+        	$ind = $1;
+    	}
+    	else {
+       		die "Failed to match $file\n";
+    	}
+
+	system "sniffles -t 12 -i $ind.bam -v $ind.vcf --snf $ind.snf --reference $genome --minsupport 1 --minsvlen 35 --mapq 15 --min-alignment-length 100\n";
+	
+	$pm->finish;
+}
+
+$pm->wait_all_children;
+```
+The output is in `BCEC-22-4.vcf`. This includes 125 inversions on LG 11 (`see LG11_inversions.txt`), five of which are greater than 1 million bps in lenght. I focused on these. One of them corresponds approximately to the perform locus (9,706,606 to 48,357,002 bps on LG11). It is supported by a single read. This includes 276 bases on one end of the inversion in one orientation, and 150 on the other in the alternative orientation. These match *Timema* sequence on genbank and do not appear to be repetitive elments of any kind.
+
+276 bp match:
+```{bash}
+AAAACATTTTTTCCCCATTATAGATAAATTAAGAGCTGTAAAAAAGGAATTGCAACACTCATATTTCAAATTTGCTTGAACCAGATACATTATATTTTAGAAGAGTCTGAATTTAAAAAGTTTTATCTTTTAGAGATTGTATTCTTTAACTAGTTCACTATTTCAAAAACTTTTCTAAAAAAAAAGAAAAGACACGCTGAAAAGTTTAAGATCATAAAAGTTGGTGGGTGTAATATTCCTTCGCGAGATTGTCAAAGATGAAAGAAAACCCTTAT
+```
+
+Reverse complement of the 150 bp match:
+```{bash}
+TTTGTACTATCATAATGTCATAATTAAAATTATACATTTGTTTGGTGTTGATTATCACATTATTTTCTGAGCCACTCTTATATGTATAATTATTTAGATATTTTCTGTTGATTTGCTGGACTACTTGCTTATAGCTATATCTAACTGACTGATTATTCCCC
+```
+
+The rest of the sequence fragment does not match the reference, which is consistent with deletion at inversion boundaries.
+
+I added the boundaries of this inversion to a comparative alignment plot of *T. knulli* versus *T. cristinae*, see [AlignPlotsKnulliNano.R](AlignPlotsKnulliNano.R).
+
 ## Alignment, variant calling and filtering for GBS data: *T. cristinae*
 
 * Includes FHA 2013 and Refugio (20XX and 2019)
