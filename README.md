@@ -929,7 +929,7 @@ cat invar_bases.fa | grep -v "^>" | sort | uniq -c
 #  12007 G
 #  18570 T
 ```
-* Generating the alignment file for beast.
+* Generating the alignment file for beast using [bcf2fa.pl](bcf2fa.pl).
 
 ```{bash}
 bcftools view -O b -o filtered2x_t_rw_comb_outg_perform.bcf filtered2x_t_rw_comb_outg_perform.vcf
@@ -947,12 +947,16 @@ perl subsetAlign.pl bce*filelist sub_*filelist
 See [subsetAlign.pl](subsetAlign.pl).
 
 
-Convert to nexus. 
+Convert to nexus.
 
 ```{bash}
 perl aliconverter.pl -i sub_perform_comb_og.fa -o sub_perform_comb_og.nex
 ```
 See [aliconverter.pl](aliconverter.pl).
+
+We then used `BEAST2` (version 2.6.6) to estimate the divergence times between the *Perform* chromosomal variants in *T. knulli*. We encoded information on the invariant sites using the `constantSiteWeights` option. We fit the GTR sequence evolution model with rate heterogeneity determined by approximating a gamma distribution with four rate categories.  We assumed a relaxed log-normal clock) with a coalescent extended Bayesian skyline tree prior. Victor fit a gamma distribution to the previously inferred divergence time for all four of our taxa–*T. knulli*, *T. petita*, *T. californicum*, and *T. poppensis*–using the `fitdistr` function in `R.` This gives a gamma with alpha = 10.8509 and beta = 0.973, which has a mean of 11.5 million years and standard deviation of 3.4 million years. We used this as the prior on the root divergence time and thus as a calibration point for our key divergence time of interest, that between the two chromosomal variants in *T. knulli*. Our input xml file is [tknulli_perform_og.xml](tknulli_perform_og.xml). We estimated the tree and associated divergence times based on 3 chains each comprising 10 million iterations.
+
+Posteriors were summarized in `R`, see [summarizeBeast.R](summarizeBest.R).
 
 ## Nanopore sequencing to verify the inversion within *T. knulli*
 
