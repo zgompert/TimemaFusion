@@ -960,7 +960,7 @@ Posteriors were summarized in `R`, see [summarizeBeast.R](summarizeBest.R).
 
 I am using `dadi` (using python 3.9.7 to generate a complementary estimate of the origin time (divergence between haplotypes) for the *Perform* locus (see [gutenkunst 2009](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1000695)). The model focuses on SNPs within *Perform* as called for *T. knulli* (not using the outgroup species as I did for `beast`). The model only considers *Perform* homozygotes from BCE. Everything is in /uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/dating_dadi/. I am working with vcf files, not site frequency spectra from *ANGSD*. 
 
-Inspired by [](), the model assumes an ancestral population that is split into two groups (the two inversion types) that then diverge with genetic exchange (here this is recombination/gene conversion between inversion haplotypes). The two groups (inversion haplotypes) can increase or decrease in size (which you can think of as selection; this occurs once after the split and then they stay at the new sizes = equilibrium). 
+Inspired by [Bilschak 2022](https://www.biorxiv.org/content/10.1101/2022.09.15.508148v1), the model assumes an ancestral population that is split into two groups (the two inversion types) that then diverge with genetic exchange (here this is recombination/gene conversion between inversion haplotypes). The two groups (inversion haplotypes) can increase or decrease in size (which you can think of as selection; this occurs once after the split and then they stay at the new sizes = equilibrium). 
 
 ```bash
 #!/bin/sh 
@@ -1004,8 +1004,7 @@ samtools depth -f bams_knulli --reference /uufs/chpc.utah.edu/common/home/u60009
 ```
 
 Our best estimate given all of this is a split time (time of origin) of 5,039,976 years ago. I used a block jackknife procedure to assess uncertainty in this estimate; the block approach better accounts for LD in the SNPs. See [jackKnifeVcf.R](jackKnifeVcf.R). The divergence time distribution is shifted lower a bit relative to the point estimate (a tried a bootstrap and this is even more pronounced) such that the best estimate for the full data set is towards the high end of the jackknife distribution (see [dadiPerformTime.pdf](https://github.com/zgompert/TimemaFusion/files/10107722/dadiPerformTime.pdf)
-). This seems fine but suggests pretty substantial sensitivity to the specific set of SNPs included. Still, the whole distribution suggests an old inversion (consistent with `beast`); the lower 5th percentile is 1,930,561 years and the median is 3,414,957 years. Finally, the model appears to be a pretty reasonable fit for the data (see ![dd_bce_cc_bce_rw_im_old](https://user-images.githubusercontent.com/31893662/204386835-4fdfb0be-c954-48c3-a01f-d4c65fb5aaa6.png)
-).
+). This seems fine but suggests pretty substantial sensitivity to the specific set of SNPs included. Still, the whole distribution suggests an old inversion (consistent with `beast`); the lower 5th percentile is 1,930,561 years and the median is 3,414,957 years. Finally, the model appears to be a pretty reasonable fit for the data, see: ![dd_bce_cc_bce_rw_im_old](https://user-images.githubusercontent.com/31893662/204386835-4fdfb0be-c954-48c3-a01f-d4c65fb5aaa6.png)
 
 ## Nanopore sequencing to verify the inversion within *T. knulli*
 
