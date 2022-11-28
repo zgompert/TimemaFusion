@@ -816,11 +816,9 @@ I used the eigenvalues from a PCA in 100 SNP windows along chromosome 11 (scaffo
 
 With the latest alignments between *T. knulli* and (i) *T. cristiane* or *T. chumash*, I think we can be confident that this is an inversion. At minimum, the individual we sequenced is inversted relative to these species with the inversion corresponding precisely to the PCA SV signal. I still need to figure out whether the inverted allele is the RW or C allele and try to date the inversion.
 
-## Divergence time dating for the SV locus alleles
+## Divergence time dating for the SV locus alleles with beast
 
 My plan is to determine the divergence time for the two SV alleles (C vs. RW) for the perform locus. This can be done in a phylogeneitc context. We have a tree from Victor, described in [Riesch_et_al-2017](https://github.com/zgompert/TimemaFusion/files/7738281/Riesch_et_al-2017-Nature_Ecology_.26_Evolution.pdf). Doro used this tree for divergence time data of the *Mel-Stripe* [Lindtke et al. 2017](https://onlinelibrary.wiley.com/doi/full/10.1111/mec.14280). The key is to use the callibrations from Victor's tree to callibrate a tree with *T. knullia* SV alleles and *T. petita*. See the DRYAD code from [Doro](https://datadryad.org/stash/dataset/doi:10.5061/dryad.jt644) and [Victor](https://datadryad.org/stash/dataset/doi:10.5061/dryad.nq67q), along withe Doro's [supplemental material](https://onlinelibrary.wiley.com/action/downloadSupplement?doi=10.1111%2Fmec.14280&file=mec14280-sup-0001-Supinfo.pdf).
-
-## Divergence dating with beast
 
 At first, I tried dating the inversion with beast using only *T. knulli* and *T. petita* (the GBS data used for everything else above). This did not work well as *T. knulli* was not monophyletic. Thus, I added *T. poppensis* and *T. californicum* to the analysis as well. Here is what I did.
 
@@ -957,6 +955,57 @@ See [aliconverter.pl](aliconverter.pl).
 We then used `BEAST2` (version 2.6.6) to estimate the divergence times between the *Perform* chromosomal variants in *T. knulli*. We encoded information on the invariant sites using the `constantSiteWeights` option. We fit the GTR sequence evolution model with rate heterogeneity determined by approximating a gamma distribution with four rate categories.  We assumed a relaxed log-normal clock) with a coalescent extended Bayesian skyline tree prior. Victor fit a gamma distribution to the previously inferred divergence time for all four of our taxa–*T. knulli*, *T. petita*, *T. californicum*, and *T. poppensis*–using the `fitdistr` function in `R.` This gives a gamma with alpha = 10.8509 and beta = 0.973, which has a mean of 11.5 million years and standard deviation of 3.4 million years. We used this as the prior on the root divergence time and thus as a calibration point for our key divergence time of interest, that between the two chromosomal variants in *T. knulli*. Our input xml file is [tknulli_perform_og.xml](tknulli_perform_og.xml). We estimated the tree and associated divergence times based on 3 chains each comprising 10 million iterations.
 
 Posteriors were summarized in `R`, see [summarizeBeast.R](summarizeBest.R).
+
+## *Perform* divergence time dating with dadi
+
+I am using `dadi` (using python 3.9.7 to generate a complementary estimate of the origin time (divergence between haplotypes) for the *Perform* locus (see [gutenkunst 2009](https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.1000695)). The model focuses on SNPs within *Perform* as called for *T. knulli* (not using the outgroup species as I did for `beast`). The model only considers *Perform* homozygotes from BCE. Everything is in /uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/dating_dadi/. I am working with vcf files, not site frequency spectra from *ANGSD*. 
+
+Inspired by [](), the model assumes an ancestral population that is split into two groups (the two inversion types) that then diverge with genetic exchange (here this is recombination/gene conversion between inversion haplotypes). The two groups (inversion haplotypes) can increase or decrease in size (which you can think of as selection; this occurs once after the split and then they stay at the new sizes = equilibrium). 
+
+```bash
+#!/bin/sh 
+#SBATCH --time=120:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=24
+#SBATCH --account=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=dadi
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+module load miniconda3/latest
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/projects/timema_fusion/dating_dadi
+
+python im_dadi_old.py
+```
+
+This runs [im_dadi_old.py](im_dadi_old.py). The data are downsampled to 70% of the smaller sample size (25 for RW homozygotes; C homozygotes sample size is 33). I run the optimization in 3 steps. First, 20 iterations with perturbations each time; second, 10 rounds of optimization seeded from the best from round 1; third, 5 rounds of optimization starting from the round 2 max. Details on parameter ranges, etc. and on the model itself are in the python script.
+
+Converting estimates (in scaled units) to esimates in terms of population size or time in years requires a (neutral) mutation rate. I am using the average of two similar rates for *Heliconius* and *Drosoophila* from [here](https://doi.org/10.1093/molbev/msw226). Moreover, we really need the mutation rate multiplied by the sequence length. This is not the same as the length of the *Perform* locus as we didn't sequence the whole thing. It isn't really even the same as the part we sequenced (non-zero coverage for at least on individual); what we want is the length of sequence where we had enough coverage to potentially detect a SNP given our fitlers, etc. This distinction is not always made clear in the literature, but it is important, especially for GBS but really even for whole genomes. I did some mathematical acrobatics to end up with what I think is a reasonable estimate but this is probably the largest possible source of error in terms of the absolute time of divergence (see [ComputeDate.R](ComputeDate.R)) after first computing depth across the *Perform* locus with `samtools` (see [SummarizeDepthBcounts.R](SummarizeDepthBcounts.R)). Depth was computed as follows:
+
+```perl
+#!/bin/sh 
+#SBATCH --time=72:00:00
+#SBATCH --nodes=1
+#SBATCH --ntasks=12
+#SBATCH --account=gompert-np
+#SBATCH --partition=gompert-np
+#SBATCH --job-name=mpDepth
+#SBATCH --mail-type=FAIL
+#SBATCH --mail-user=zach.gompert@usu.edu
+
+
+module load samtools/1.5
+
+cd /uufs/chpc.utah.edu/common/home/gompert-group3/data/timema_clines_rw_SV/align_rw_plus
+
+samtools depth -f bams_knulli --reference /uufs/chpc.utah.edu/common/home/u6000989/data/timema/hic_genomes/t_knulli/mod_hic_output.fasta -r ScFnSIn_500_HRSCAF958:13093370-43606674 -q 20 -Q 30 > t_rw_knulli_perform_reg_depth.txt
+```
+
+Our best estimate given all of this is a split time (time of origin) of 5,039,976 years ago. I used a block jackknife procedure to assess uncertainty in this estimate; the block approach better accounts for LD in the SNPs. See [jackKnifeVcf.R](jackKnifeVcf.R). The divergence time distribution is shifted lower a bit relative to the point estimate (a tried a bootstrap and this is even more pronounced) such that the best estimate for the full data set is towards the high end of the jackknife distribution (see [dadiPerformTime.pdf](https://github.com/zgompert/TimemaFusion/files/10107722/dadiPerformTime.pdf)
+). This seems fine but suggests pretty substantial sensitivity to the specific set of SNPs included. Still, the whole distribution suggests an old inversion (consistent with `beast`); the lower 5th percentile is 1,930,561 years and the median is 3,414,957 years. Finally, the model appears to be a pretty reasonable fit for the data (see ![dd_bce_cc_bce_rw_im_old](https://user-images.githubusercontent.com/31893662/204386835-4fdfb0be-c954-48c3-a01f-d4c65fb5aaa6.png)
+).
 
 ## Nanopore sequencing to verify the inversion within *T. knulli*
 
